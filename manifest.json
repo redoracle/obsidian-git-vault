@@ -1,0 +1,11 @@
+{
+    "author": "RedOracle",
+    "authorUrl": "https://github.com/redoracle",
+    "id": "git-vault",
+    "name": "Obsidian Git Vault",
+    "minAppVersion": "1.11.4",
+    "description": "Keep your vault in sync with confidence using Git on desktop and one-tap API sync on mobile, backed by smart triggers and a visual conflict resolver.",
+    "isDesktopOnly": false,
+    "fundingUrl": "https://ko-fi.com/X8X71XF2G2",
+    "version": "1.1.0"
+}

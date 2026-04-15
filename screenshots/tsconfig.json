@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "CommonJS",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "types": ["node"],
+        "strict": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "outDir": "./dist"
+    },
+    "include": ["tests/**/*", "playwright.config.ts"]
+}

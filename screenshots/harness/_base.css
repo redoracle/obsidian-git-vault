@@ -1,0 +1,560 @@
+/*
+ * _base.css — Obsidian dark theme CSS variables + plugin component styles
+ *
+ * Used by every harness HTML page to give screenshots the correct look.
+ * Mirrors the Obsidian default dark theme and the plugin's own styles.css.
+ */
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Obsidian dark-theme CSS custom properties ──────────────────────────── */
+:root {
+  /* Backgrounds */
+  --background-primary:           #202020;
+  --background-primary-alt:       #1d1d1d;
+  --background-secondary:         #161616;
+  --background-secondary-alt:     #111111;
+  --background-modifier-border:   #3a3a3a;
+  --background-modifier-hover:    rgba(255,255,255,0.06);
+  --background-modifier-active-hover: rgba(255,255,255,0.075);
+  --background-modifier-form-field: rgba(0,0,0,0.3);
+  --background-modifier-error:    rgba(214,54,54,0.14);
+  --background-modifier-error-rgb: 214,54,54;
+  --background-modifier-success:  rgba(52,169,78,0.18);
+  --background-modifier-cover:    rgba(0,0,0,0.80);
+
+  /* Text */
+  --text-normal:    #dcddde;
+  --text-muted:     #999;
+  --text-faint:     #666;
+  --text-on-accent: #fff;
+  --text-error:     #e35d5d;
+  --text-success:   #4caf50;
+  --text-accent:    #8b7cf8;
+  --text-selection:  rgba(100,100,255,0.2);
+
+  /* Interactive */
+  --interactive-normal:       #303030;
+  --interactive-hover:        #3a3a3a;
+  --interactive-accent:       #7c61ef;
+  --interactive-accent-rgb:   124,97,239;
+  --interactive-accent-hover: #8873f5;
+  --interactive-success:      #197300;
+
+  /* Named colours used by plugin */
+  --color-green:  #4caf50;
+  --color-yellow: #e0b429;
+  --color-orange: #e09a5a;
+  --color-red:    #e35d5d;
+  --color-blue:   #5577ff;
+  --color-purple: #7c61ef;
+  --color-cyan:   #53b0c2;
+
+  /* Typography */
+  --font-text:        ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-monospace:   ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-text-size:   15px;
+  --font-ui-small:    13px;
+  --font-ui-smaller:  11px;
+  --font-ui-medium:   15px;
+  --font-ui-large:    20px;
+
+  /* Spacing / tokens */
+  --size-2-1: 2px;
+  --size-2-2: 4px;
+  --size-2-3: 6px;
+  --size-4-1: 4px;
+  --size-4-2: 8px;
+  --size-4-3: 12px;
+  --size-4-4: 16px;
+  --size-4-5: 20px;
+  --size-4-6: 24px;
+
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+
+  --input-height: 30px;
+  --header-height: 40px;
+
+  /* Icon */
+  --icon-size:       18px;
+  --icon-stroke:     2px;
+  --icon-color:      #a0a0a0;
+  --icon-color-hover:#dcddde;
+
+  /* Nav */
+  --nav-item-color:         #999;
+  --nav-item-color-hover:   #dcddde;
+  --nav-item-color-active:  #dcddde;
+  --nav-item-background-active: rgba(255,255,255,0.08);
+  --nav-item-padding:       4px 8px;
+
+  /* Git diff colours (kept for completeness) */
+  --git-delete-bg: #ff475040;
+  --git-insert-bg: #68d36840;
+  --git-change-bg: #ffd55840;
+}
+
+/* ── Base page ──────────────────────────────────────────────────────────── */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Obsidian workspace panel shell ─────────────────────────────────────── */
+
+/* Used so screenshots clip to the panel area */
+.screenshot-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 320px;
+  background: var(--background-primary);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* Leaf header (tab bar area above a view) */
+.view-header {
+  display: flex;
+  align-items: center;
+  height: var(--header-height);
+  padding: 0 10px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  font-weight: 600;
+  gap: 8px;
+}
+.view-header-title-icon {
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+}
+.view-header-title {
+  flex: 1;
+}
+
+/* Nav-button row inside a view */
+.nav-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 4px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.nav-buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.nav-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-s);
+  color: var(--icon-color);
+  cursor: pointer;
+}
+.nav-action-button:hover { color: var(--icon-color-hover); background: var(--background-modifier-hover); }
+
+/* View content scrollable body */
+.view-content {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Tree / nav file list */
+.nav-files-container { padding: 4px 0; }
+.tree-item-self {
+  display: flex;
+  align-items: center;
+  padding: var(--nav-item-padding);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--nav-item-color);
+}
+.tree-item-self:hover { background: var(--background-modifier-hover); color: var(--nav-item-color-hover); }
+.tree-item-inner { flex: 1; font-size: var(--font-ui-small); }
+.tree-item-icon {
+  display: flex;
+  align-items: center;
+  width: 18px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+  transition: transform 0.15s;
+}
+.tree-item-icon.is-collapsed svg { transform: rotate(-90deg); }
+.nav-folder-title { font-weight: 600; color: var(--text-muted); }
+.nav-folder-title-content { font-size: var(--font-ui-small); }
+.nav-file-title { padding-left: 20px; }
+.nav-file-title-content { font-size: var(--font-ui-small); }
+
+.files-count {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  min-width: 16px;
+  text-align: right;
+}
+
+/* ── Obsidian buttons ────────────────────────────────────────────────────── */
+button {
+  font-family: var(--font-text);
+  font-size: 0.875em;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  padding: 6px 14px;
+  transition: background 0.1s;
+}
+button:hover { background: var(--interactive-hover); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Primary action button */
+button.mod-cta {
+  background: var(--interactive-accent);
+  border-color: transparent;
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+button.mod-cta:hover { background: var(--interactive-accent-hover); }
+button.mod-warning {
+  background: rgba(var(--background-modifier-error-rgb), 0.3);
+  border-color: rgba(var(--background-modifier-error-rgb), 0.6);
+  color: var(--text-error);
+}
+
+/* ── Obsidian inputs ─────────────────────────────────────────────────────── */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  font-family: var(--font-text);
+  font-size: 0.875em;
+  padding: 5px 8px;
+  width: 100%;
+  outline: none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb),0.25);
+}
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+/* Commit message textarea */
+.git-commit-msg {
+  position: relative;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.commit-msg-input {
+  resize: none;
+  width: 100%;
+  min-height: 60px;
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  padding: 6px 8px;
+  font-family: var(--font-text);
+  line-height: 1.4;
+}
+
+/* Toggle switch */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  width: 36px;
+  height: 20px;
+  background: var(--background-modifier-border);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.checkbox-container.is-enabled { background: var(--interactive-accent); }
+.checkbox-container::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.checkbox-container.is-enabled::after { transform: translateX(16px); }
+
+/* ── Settings panel ──────────────────────────────────────────────────────── */
+.vertical-tab-content {
+  padding: 16px 24px;
+  max-width: 740px;
+  background: var(--background-primary);
+}
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.setting-item:last-child { border-bottom: none; }
+.setting-item-info { flex: 1; min-width: 0; }
+.setting-item-name { font-size: 0.9375em; font-weight: 500; color: var(--text-normal); }
+.setting-item-description { font-size: 0.8125em; color: var(--text-muted); margin-top: 2px; }
+.setting-item-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.setting-item-control select,
+.setting-item-control input { min-width: 180px; width: auto; }
+.setting-item-heading .setting-item-name {
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--text-accent);
+  letter-spacing: 0.02em;
+}
+.setting-item-heading { border-bottom: none; padding-bottom: 4px; }
+
+/* ── git-tools badge on section headers ──────────────────────────────────── */
+.git-tools {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 4px;
+}
+.git-tools .buttons { display: flex; align-items: center; }
+.git-tools .buttons .clickable-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-s);
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.git-tools .buttons .clickable-icon:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.git-tools .type { font-size: var(--font-ui-smaller); padding-left: 4px; }
+.git-tools .type[data-type="M"] { color: var(--color-orange); }
+.git-tools .type[data-type="D"] { color: var(--color-red); }
+.git-tools .type[data-type="A"] { color: var(--color-green); }
+
+/* file entries in tree */
+.nav-file-title {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px 3px 28px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  color: var(--nav-item-color);
+}
+.nav-file-title:hover { background: var(--background-modifier-hover); color: var(--nav-item-color-hover); }
+
+/* ── Obsidian modal chrome ───────────────────────────────────────────────── */
+.modal-bg {
+  background: var(--background-modifier-cover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.modal {
+  background: var(--background-primary);
+  border-radius: var(--radius-l);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  overflow: hidden;
+  width: 100%;
+  max-width: 900px;
+}
+.modal-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+}
+.modal-content {
+  padding: 20px 24px;
+}
+
+/* ── Plugin: SimpleSync component styles ─────────────────────────────────── */
+.git-vault-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.git-vault-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.git-vault-title {
+  font-weight: 600;
+  font-size: 1em;
+  color: var(--text-normal);
+}
+.git-vault-provider-badge {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  letter-spacing: 0.02em;
+}
+.git-vault-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875em;
+  color: var(--text-muted);
+}
+.git-vault-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-faint);
+}
+.status-ok .git-vault-status-dot    { background: var(--color-green); }
+.status-error .git-vault-status-dot { background: var(--color-red); }
+.status-conflict .git-vault-status-dot { background: var(--color-orange); }
+.status-offline .git-vault-status-dot  { background: var(--text-faint); }
+.status-syncing .git-vault-status-dot  {
+  background: var(--color-yellow);
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+.git-vault-sync-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font-size: 0.95em;
+}
+.git-vault-sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.git-vault-conflict-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: var(--radius-m);
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  border: 1px solid rgba(var(--background-modifier-error-rgb), 0.4);
+  cursor: pointer;
+  font-size: 0.875em;
+}
+.git-vault-meta {
+  display: flex;
+  gap: 6px;
+  font-size: 0.75em;
+  color: var(--text-faint);
+}
+
+/* ── Plugin: conflict modal styles ───────────────────────────────────────── */
+.git-vault-conflict-path {
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  padding: 6px 10px;
+  border-radius: var(--radius-s);
+  margin: 0 0 16px;
+  word-break: break-all;
+}
+.git-vault-conflict-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.git-vault-conflict-col h3 {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.git-vault-conflict-content {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: 10px 12px;
+  font-family: var(--font-monospace);
+  font-size: 0.8em;
+  line-height: 1.6;
+  color: var(--text-normal);
+  overflow: auto;
+  margin: 0;
+  max-height: 220px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.git-vault-conflict-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.git-vault-conflict-actions button { flex: 1; min-width: 100px; }
+.git-vault-skip-btn { color: var(--text-faint); font-size: 0.8125em; }
+.git-vault-manual-section { margin-top: 12px; }
+.git-vault-manual-section h3 {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.git-vault-manual-textarea {
+  width: 100%;
+  font-family: var(--font-monospace);
+  font-size: 0.82em;
+  line-height: 1.6;
+  background: var(--background-secondary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+/* ── Lucide SVG icons (simplified inline) ────────────────────────────────── */
+svg.svg-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}

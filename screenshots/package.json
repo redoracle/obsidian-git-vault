@@ -1,0 +1,15 @@
+{
+    "name": "obsidian-git-vault-screenshots",
+    "private": true,
+    "description": "Playwright screenshot harness for obsidian-git-vault documentation",
+    "scripts": {
+        "test": "playwright test",
+        "screenshot": "playwright screenshot",
+        "screenshot:headed": "playwright test --headed",
+        "install-browsers": "playwright install chromium"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.49.0",
+        "@types/node": "^20.0.0"
+    }
+}

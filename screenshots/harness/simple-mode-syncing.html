@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Mode – Syncing</title>
+  <link rel="stylesheet" href="_base.css">
+  <style>
+    body { padding: 24px; display: flex; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div id="screenshot-target" class="screenshot-wrap" style="width:340px;">
+    <!-- View header -->
+    <div class="view-header">
+      <span class="view-header-title-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true" focusable="false">
+          <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>
+        </svg>
+      </span>
+      <span class="view-header-title">Source Control</span>
+    </div>
+
+    <!-- SimpleSync component – syncing state -->
+    <div class="git-vault-simple view-content">
+      <div class="git-vault-header">
+        <span class="git-vault-title">Obsidian Git Vault</span>
+        <span class="git-vault-provider-badge">Cloud</span>
+      </div>
+
+      <div class="git-vault-status status-syncing">
+        <span class="git-vault-status-dot"></span>
+        <span class="git-vault-status-text">Syncing your notes…</span>
+      </div>
+
+      <button class="git-vault-sync-btn mod-cta" disabled>Syncing…</button>
+
+      <div class="git-vault-meta">
+        <span>Last sync: 2:41 PM</span>
+        <span>·</span>
+        <span>3 syncs this session</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

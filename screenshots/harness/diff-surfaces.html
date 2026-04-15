@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Git Vault Diff Surfaces</title>
+    <link rel="stylesheet" href="./_base.css" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+        :root {
+            --code-size: 13px;
+            --font-small: 0.875rem;
+            --line-height-normal: 1.5;
+            --layer-popover: 100;
+            --border-width: 1px;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 24px;
+            background:
+                radial-gradient(circle at top, rgba(124, 97, 239, 0.12), transparent 32%),
+                linear-gradient(180deg, #141414 0%, #0f0f10 100%);
+        }
+
+        .harness-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .harness-card {
+            display: grid;
+            gap: 10px;
+        }
+
+        .harness-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+        }
+
+        .panel-body {
+            padding: 14px;
+        }
+
+        .cm-tooltip.git-diff-tooltip {
+            z-index: var(--layer-popover);
+            background-color: var(--background-primary-alt);
+            border: var(--border-width) solid var(--background-primary-alt);
+            border-radius: var(--radius-s);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+            overflow: hidden;
+        }
+
+        .cm-tooltip.git-diff-tooltip .tooltip-toolbar {
+            display: flex;
+            gap: 6px;
+            padding: var(--size-2-1);
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--background-modifier-border);
+        }
+
+        .cm-tooltip.git-diff-tooltip .clickable-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: var(--icon-color);
+            background: transparent;
+        }
+
+        .cm-tooltip.git-diff-tooltip .clickable-icon:hover {
+            color: var(--icon-color-hover);
+            background: var(--background-modifier-hover);
+        }
+
+        .mock-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: 0.9;
+        }
+
+        .split-pane {
+            display: grid;
+            grid-template-columns: 44px 1fr;
+            gap: 8px;
+            align-items: start;
+            font-family: var(--font-monospace);
+            font-size: 13px;
+        }
+
+        .split-gutter {
+            display: grid;
+            gap: 6px;
+            align-content: start;
+        }
+
+        .cm-merge-revert {
+            position: relative;
+            height: 40px;
+        }
+
+        .cm-merge-revert > .revert-controls {
+            inset: 0;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            border-radius: var(--radius-s);
+        }
+
+        .git-split-diff-view .cm-merge-revert .clickable-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            color: var(--icon-color);
+            background: transparent;
+        }
+
+        .git-split-diff-view .cm-merge-revert .clickable-icon:hover {
+            color: var(--icon-color-hover);
+            background: var(--background-modifier-hover);
+        }
+
+        .git-split-diff-view .cm-merge-revert .svg-icon {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+
+        .split-code {
+            display: grid;
+            gap: 6px;
+        }
+
+        .split-line,
+        .cm-collapsedLines {
+            border-radius: var(--radius-s);
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .cm-changedText {
+            border-radius: 3px;
+            padding-inline: 2px;
+        }
+
+        .harness-note {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div id="screenshot-target" class="harness-grid">
+        <section class="harness-card">
+            <div class="harness-label">Unified Diff View</div>
+            <div class="screenshot-wrap">
+                <div class="view-header">
+                    <div class="view-header-title">Diff: demo.md</div>
+                </div>
+                <div class="view-content panel-body git-diff">
+                    <div class="d2h-file-diff">
+                        <div class="d2h-code-wrapper">
+                            <table class="d2h-diff-table">
+                                <tbody class="d2h-diff-tbody">
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-info"></td>
+                                        <td class="d2h-info">
+                                            <div class="d2h-code-line">@@ -1,3 +1,4 @@</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-cntx">
+                                            <div class="line-num1">1</div>
+                                            <div class="line-num2">1</div>
+                                        </td>
+                                        <td class="d2h-cntx">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">&nbsp;</span>
+                                                <span class="d2h-code-line-ctn">line one</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-del d2h-change">
+                                            <div class="line-num1">2</div>
+                                            <div class="line-num2"></div>
+                                        </td>
+                                        <td class="d2h-del d2h-change">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">-</span>
+                                                <span class="d2h-code-line-ctn"><del>removed</del> line</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-ins d2h-change">
+                                            <div class="line-num1"></div>
+                                            <div class="line-num2">2</div>
+                                        </td>
+                                        <td class="d2h-ins d2h-change">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">+</span>
+                                                <span class="d2h-code-line-ctn"><ins>added</ins> line</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-ins">
+                                            <div class="line-num1"></div>
+                                            <div class="line-num2">3</div>
+                                        </td>
+                                        <td class="d2h-ins">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">+</span>
+                                                <span class="d2h-code-line-ctn">second add</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-cntx">
+                                            <div class="line-num1">3</div>
+                                            <div class="line-num2">4</div>
+                                        </td>
+                                        <td class="d2h-cntx">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">&nbsp;</span>
+                                                <span class="d2h-code-line-ctn">unchanged tail</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="harness-note">Mirrors the live subtree appended by DiffView and the hunk tooltip: only <code>.d2h-file-diff</code> and its descendants.</p>
+        </section>
+
+        <section class="harness-card">
+            <div class="harness-label">Hunk Tooltip</div>
+            <div class="cm-tooltip git-diff-tooltip">
+                <div class="tooltip-toolbar">
+                    <div class="clickable-icon" aria-label="Close hunk"><span class="mock-icon"></span></div>
+                    <div class="clickable-icon" aria-label="Stage hunk"><span class="mock-icon"></span></div>
+                    <div class="clickable-icon" aria-label="Reset hunk"><span class="mock-icon"></span></div>
+                </div>
+                <div class="git-diff panel-body">
+                    <div class="d2h-file-diff">
+                        <div class="d2h-code-wrapper">
+                            <table class="d2h-diff-table">
+                                <tbody class="d2h-diff-tbody">
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-info"></td>
+                                        <td class="d2h-info">
+                                            <div class="d2h-code-line">@@ -12,2 +12,2 @@</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-del d2h-change">
+                                            <div class="line-num1">12</div>
+                                            <div class="line-num2"></div>
+                                        </td>
+                                        <td class="d2h-del d2h-change">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">-</span>
+                                                <span class="d2h-code-line-ctn">return <del>oldValue</del>;</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="d2h-code-linenumber d2h-ins d2h-change">
+                                            <div class="line-num1"></div>
+                                            <div class="line-num2">12</div>
+                                        </td>
+                                        <td class="d2h-ins d2h-change">
+                                            <div class="d2h-code-line">
+                                                <span class="d2h-code-line-prefix">+</span>
+                                                <span class="d2h-code-line-ctn">return <ins>nextValue</ins>;</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="harness-card">
+            <div class="harness-label">Split Diff View</div>
+            <div class="screenshot-wrap">
+                <div class="view-header">
+                    <div class="view-header-title">Split Diff: demo.md</div>
+                </div>
+                <div class="view-content panel-body git-split-diff-view git-diff">
+                    <div class="split-pane">
+                        <div class="split-gutter">
+                            <div class="cm-merge-revert">
+                                <div class="revert-controls">
+                                    <div class="clickable-icon" aria-label="Stage hunk">
+                                        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="clickable-icon" aria-label="Reset hunk">
+                                        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 7v6h6"></path>
+                                            <path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="split-code">
+                            <div class="split-line cm-deletedLine">const value = <span class="cm-changedText">oldValue</span>;</div>
+                            <div class="split-line cm-insertedLine">const value = <span class="cm-changedText">newValue</span>;</div>
+                            <!-- Intentionally using CodeMirror's internal/obfuscated class name 'ͼ2' to match the live merge view output; do NOT rename. -->
+                            <div class="ͼ2"><div class="cm-collapsedLines">12 unchanged lines</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

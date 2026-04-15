@@ -1,0 +1,99 @@
+<!-- tslint:disable ts(2345)  -->
+<script lang="ts">
+    import LogTreeComponent from "./logTreeComponent.svelte";
+    import type ObsidianGit from "src/main";
+    import type { HistoryRootTreeItem, TreeItem } from "src/types";
+    import { slide } from "svelte/transition";
+    import type HistoryView from "../historyView";
+    import LogFileComponent from "./logFileComponent.svelte";
+
+    interface Props {
+        hierarchy: HistoryRootTreeItem;
+        plugin: ObsidianGit;
+        view: HistoryView;
+        topLevel?: boolean;
+        closed: Record<string, boolean>;
+    }
+
+    let {
+        hierarchy,
+        plugin,
+        view,
+        topLevel = false,
+        closed = $bindable(),
+    }: Props = $props();
+
+    let side = $derived(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (view.leaf.getRoot() as any).side == "left" ? "right" : "left"
+    );
+
+    function fold(event: MouseEvent, item: TreeItem) {
+        event.stopPropagation();
+        closed[item.path] = !closed[item.path];
+    }
+</script>
+
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<main class:topLevel>
+    {#each hierarchy.children as entity}
+        {#if entity.data}
+            <div>
+                <LogFileComponent diff={entity.data} {view} />
+            </div>
+        {:else}
+            <div
+                class="tree-item nav-folder"
+                class:is-collapsed={closed[entity.path]}
+            >
+                <div
+                    class="tree-item-self is-clickable nav-folder-title"
+                    data-tooltip-position={side}
+                    aria-label={entity.vaultPath}
+                    onclick={(event) => fold(event, entity)}
+                >
+                    <div
+                        data-icon="folder"
+                        class="git-folder-icon-prefix"
+                    ></div>
+                    <div
+                        class="tree-item-icon nav-folder-collapse-indicator collapse-icon"
+                        class:is-collapsed={closed[entity.path]}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="svg-icon right-triangle"
+                            ><path d="M3 8L12 17L21 8" /></svg
+                        >
+                    </div>
+                    <div class="tree-item-inner nav-folder-title-content">
+                        {entity.title}
+                    </div>
+                </div>
+
+                {#if !closed[entity.path]}
+                    <div
+                        class="tree-item-children nav-folder-children"
+                        transition:slide|local={{ duration: 150 }}
+                    >
+                        <LogTreeComponent
+                            hierarchy={entity as HistoryRootTreeItem}
+                            {plugin}
+                            {view}
+                            bind:closed
+                        />
+                    </div>
+                {/if}
+            </div>
+        {/if}
+    {/each}
+</main>

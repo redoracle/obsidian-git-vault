@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Mode – Source Control</title>
+  <link rel="stylesheet" href="_base.css">
+  <style>
+    body { padding: 24px; display: flex; justify-content: center; }
+
+    /* Source control specific styles matching Obsidian Git */
+    .git-view { display: flex; flex-direction: column; height: 100%; }
+
+    .nav-folder-title { padding: 4px 6px; }
+    .nav-folder-title-content { font-weight: 600; font-size: 0.8125em; }
+
+    .staged .nav-folder-title { color: var(--text-muted); }
+
+    .nav-file-title {
+      display: flex;
+      align-items: center;
+      padding: 3px 6px 3px 28px;
+      font-size: 0.8125em;
+      color: var(--nav-item-color);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+    }
+    .nav-file-title:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+    .nav-file-title-content { flex: 1; }
+
+    .file-type-badge {
+      font-size: 0.6875em;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-left: 6px;
+    }
+    .file-type-M { color: var(--color-orange); }
+    .file-type-A { color: var(--color-green); }
+    .file-type-D { color: var(--color-red); }
+  </style>
+</head>
+<body>
+  <div id="screenshot-target" class="screenshot-wrap" style="width:340px;">
+
+    <!-- View header -->
+    <div class="view-header">
+      <span class="view-header-title-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>
+        </svg>
+      </span>
+      <span class="view-header-title">Source Control</span>
+    </div>
+
+    <!-- Nav button bar -->
+    <div class="nav-header">
+      <div class="nav-buttons-container">
+        <!-- Commit-and-sync -->
+        <div class="nav-action-button" aria-label="Commit-and-sync" title="Commit-and-sync">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/>
+          </svg>
+        </div>
+        <!-- Commit -->
+        <div class="nav-action-button" aria-label="Commit" title="Commit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <!-- Stage all -->
+        <div class="nav-action-button" aria-label="Stage all" title="Stage all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+          </svg>
+        </div>
+        <!-- Unstage all -->
+        <div class="nav-action-button" aria-label="Unstage all" title="Unstage all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
+          </svg>
+        </div>
+        <!-- Push -->
+        <div class="nav-action-button" aria-label="Push" title="Push" style="color:var(--text-accent);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <!-- Pull -->
+        <div class="nav-action-button" aria-label="Pull" title="Pull">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <!-- Layout -->
+        <div class="nav-action-button" aria-label="Change Layout" title="Change Layout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </div>
+        <!-- Refresh -->
+        <div class="nav-action-button" aria-label="Refresh" title="Refresh">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commit message textarea -->
+    <div class="git-commit-msg">
+      <textarea class="commit-msg-input" rows="2" placeholder="Commit Message">Weekly notes update</textarea>
+    </div>
+
+    <!-- File tree -->
+    <div class="view-content nav-files-container">
+      <div class="tree-item">
+
+        <!-- Staged Changes section -->
+        <div class="tree-item staged">
+          <div class="tree-item-self nav-folder-title is-clickable">
+            <div class="tree-item-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8L12 17L21 8"/>
+              </svg>
+            </div>
+            <div class="tree-item-inner nav-folder-title-content">Staged Changes</div>
+            <div class="git-tools">
+              <div class="buttons">
+                <div class="clickable-icon" title="Unstage all" aria-label="Unstage all">
+                  <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="9" x2="14" y2="9"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="files-count">1</div>
+            </div>
+          </div>
+          <!-- Staged file -->
+          <div class="tree-item-children">
+            <div class="nav-file-title">
+              <span class="nav-file-title-content">Projects/Q4-Plan.md</span>
+              <span class="file-type-badge file-type-M">M</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unstaged Changes section -->
+        <div class="tree-item">
+          <div class="tree-item-self nav-folder-title is-clickable">
+            <div class="tree-item-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8L12 17L21 8"/>
+              </svg>
+            </div>
+            <div class="tree-item-inner nav-folder-title-content">Changes</div>
+            <div class="git-tools">
+              <div class="buttons">
+                <div class="clickable-icon" title="Stage all" aria-label="Stage all">
+                  <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="9" y1="4" x2="9" y2="14"/><line x1="4" y1="9" x2="14" y2="9"/>
+                  </svg>
+                </div>
+                <div class="clickable-icon" title="Discard all" aria-label="Discard all" style="color:var(--color-red);">
+                  <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 15 6"/><path d="M14 6l-1 9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1L4 6"/>
+                    <path d="M8 6V4a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="files-count">3</div>
+            </div>
+          </div>
+          <!-- Unstaged files -->
+          <div class="tree-item-children">
+            <div class="nav-file-title">
+              <span class="nav-file-title-content">Daily Notes/2024-01-15.md</span>
+              <span class="file-type-badge file-type-M">M</span>
+            </div>
+            <div class="nav-file-title">
+              <span class="nav-file-title-content">Daily Notes/2024-01-16.md</span>
+              <span class="file-type-badge file-type-A">A</span>
+            </div>
+            <div class="nav-file-title">
+              <span class="nav-file-title-content">Archive/old-meeting.md</span>
+              <span class="file-type-badge file-type-D">D</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
