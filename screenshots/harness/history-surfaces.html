@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Git Vault History Surfaces</title>
+    <link rel="stylesheet" href="./_base.css" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+        body {
+            min-height: 100vh;
+            padding: 24px;
+            background:
+                radial-gradient(circle at top, rgba(224, 180, 76, 0.11), transparent 32%),
+                linear-gradient(180deg, #141414 0%, #0f0f10 100%);
+        }
+
+        #screenshot-target {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .surface-card {
+            display: grid;
+            gap: 10px;
+        }
+
+        .surface-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+        }
+
+        .workspace-leaf-content {
+            display: flex;
+            flex-direction: column;
+            background: var(--background-primary);
+        }
+
+        .workspace-leaf-content .view-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clickable-icon,
+        .nav-action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--icon-color);
+        }
+
+        .clickable-icon:hover,
+        .nav-action-button:hover {
+            color: var(--icon-color-hover);
+        }
+
+        .svg-icon {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+
+        .tree-item-children {
+            display: grid;
+            gap: 4px;
+            padding: 2px 6px 6px 10px;
+        }
+
+        .git-meta-stack {
+            min-width: 0;
+        }
+
+        .history-note {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div id="screenshot-target">
+        <section class="surface-card">
+            <div class="surface-label">Commit List</div>
+            <div class="screenshot-wrap">
+                <div class="workspace-leaf-content" data-type="git-history-view">
+                    <main class="git-view">
+                        <div class="nav-header">
+                            <div class="nav-buttons-container">
+                                <div class="clickable-icon nav-action-button" aria-label="Change layout">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Refresh history">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="nav-files-container">
+                            <div class="tree-item nav-folder mod-root">
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title" aria-label="main, HEAD&#10;Avery Stone&#10;Apr 11, 2026 · 10:21&#10;Document API sync settings">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon is-collapsed">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="git-meta-stack">
+                                            <div class="git-ref">main, HEAD</div>
+                                            <div class="git-author">Avery Stone</div>
+                                            <div class="git-date">Apr 11, 2026 · 10:21</div>
+                                            <div class="tree-item-inner nav-folder-title-content">Document API sync settings</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title" aria-label="Jordan Lee&#10;Apr 10, 2026 · 17:08&#10;Resolve merge conflict in roadmap">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon is-collapsed">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="git-meta-stack">
+                                            <div class="git-author">Jordan Lee</div>
+                                            <div class="git-date">Apr 10, 2026 · 17:08</div>
+                                            <div class="tree-item-inner nav-folder-title-content">Resolve merge conflict in roadmap</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title" aria-label="Jordan Lee&#10;Apr 9, 2026 · 08:41&#10;Add mobile sync notes">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon is-collapsed">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="git-meta-stack">
+                                            <div class="git-author">Jordan Lee</div>
+                                            <div class="git-date">Apr 9, 2026 · 08:41</div>
+                                            <div class="tree-item-inner nav-folder-title-content">Add mobile sync notes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="git-history-list-end"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface-card">
+            <div class="surface-label">Expanded Commit Files</div>
+            <div class="screenshot-wrap">
+                <div class="workspace-leaf-content" data-type="git-history-view">
+                    <main class="git-view">
+                        <div class="nav-header">
+                            <div class="nav-buttons-container">
+                                <div class="clickable-icon nav-action-button" aria-label="Change layout">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Refresh history">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="nav-files-container">
+                            <div class="tree-item nav-folder mod-root">
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title" aria-label="main, HEAD&#10;Avery Stone&#10;Apr 11, 2026 · 10:21&#10;Document API sync settings">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="git-meta-stack">
+                                            <div class="git-ref">main, HEAD</div>
+                                            <div class="git-author">Avery Stone</div>
+                                            <div class="git-date">Apr 11, 2026 · 10:21</div>
+                                            <div class="tree-item-inner nav-folder-title-content">Document API sync settings</div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item-children nav-folder-children">
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Settings/Sync.md" aria-label="Settings/Sync.md">
+                                                <div class="tree-item-inner nav-file-title-content">Settings/Sync.md</div>
+                                                <div class="git-tools">
+                                                    <div class="buttons">
+                                                        <div class="clickable-icon" aria-label="Open file">
+                                                            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                    <span class="type" data-type="M">M</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Notes/Release Plan.md" aria-label="Notes/Release Plan.md">
+                                                <div class="tree-item-inner nav-file-title-content">Notes/Release Plan.md</div>
+                                                <div class="git-tools"><span class="type" data-type="A">A</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Archive/old-sync-note.md" aria-label="Archive/old-sync-note.md">
+                                                <div class="tree-item-inner nav-file-title-content">Archive/old-sync-note.md</div>
+                                                <div class="git-tools"><span class="type" data-type="D">D</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="git-history-list-end"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+            <p class="history-note">Exercises the history row metadata stack, expanded file list, status badges, and the shared nav alignment rules used in the history leaf.</p>
+        </section>
+    </div>
+</body>
+</html>

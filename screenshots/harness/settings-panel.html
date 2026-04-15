@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings Panel</title>
+  <link rel="stylesheet" href="_base.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    #screenshot-target {
+      width: 780px;
+      background: var(--background-primary);
+      border-radius: var(--radius-l);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.7);
+      overflow: hidden;
+    }
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--background-modifier-border);
+      background: var(--background-secondary);
+    }
+    .settings-header-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--interactive-accent);
+      border-radius: var(--radius-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .settings-title { font-size: 1.1em; font-weight: 700; }
+    .settings-version {
+      font-size: 0.75em;
+      color: var(--text-faint);
+      background: var(--background-modifier-border);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: auto;
+    }
+    /* Slightly tighter controls for Settings page feel */
+    .setting-item-control select,
+    .setting-item-control input[type="text"],
+    .setting-item-control input[type="password"] {
+      min-width: 200px;
+      background: var(--background-modifier-form-field);
+    }
+    .setting-item-control input[type="number"] {
+      min-width: 80px;
+      background: var(--background-modifier-form-field);
+    }
+    /* Password mask */
+    .masked { letter-spacing: 0.15em; }
+  </style>
+</head>
+<body>
+  <div id="screenshot-target">
+
+    <!-- Plugin settings header -->
+    <div class="settings-header">
+      <div class="settings-header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>
+        </svg>
+      </div>
+      <span class="settings-title">Obsidian Git Vault</span>
+      <span class="settings-version">v1.0.0</span>
+    </div>
+
+    <!-- Settings content -->
+    <div class="vertical-tab-content">
+
+      <!-- ── General section ──────────────────────────────────────── -->
+      <div class="setting-item setting-item-heading">
+        <div class="setting-item-info">
+          <div class="setting-item-name">General</div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">UI Mode</div>
+          <div class="setting-item-description">
+            Simple mode shows a single Sync button. Advanced mode gives full Git control.
+          </div>
+        </div>
+        <div class="setting-item-control">
+          <select>
+            <option>Simple</option>
+            <option selected>Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Sync Backend</div>
+          <div class="setting-item-description">
+            Git (CLI) uses a local Git install. Gitless uses the GitHub API – no Git required.
+          </div>
+        </div>
+        <div class="setting-item-control">
+          <select>
+            <option selected>Git (CLI)</option>
+            <option>Gitless (GitHub API)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── GitHub Credentials section ──────────────────────────── -->
+      <div class="setting-item setting-item-heading" style="margin-top:8px;">
+        <div class="setting-item-info">
+          <div class="setting-item-name">GitHub Credentials</div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">GitHub Token</div>
+          <div class="setting-item-description">Personal access token with repository read/write scope.</div>
+        </div>
+        <div class="setting-item-control">
+          <input type="password" value="ghp_xxxxxxxxxxxxxxxxxxxx" class="masked">
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">GitHub Owner</div>
+          <div class="setting-item-description">Your GitHub username or organisation name.</div>
+        </div>
+        <div class="setting-item-control">
+          <input type="text" value="my-username">
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Repository</div>
+          <div class="setting-item-description">Name of the repository that stores your vault.</div>
+        </div>
+        <div class="setting-item-control">
+          <input type="text" value="my-obsidian-vault">
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Branch</div>
+          <div class="setting-item-description">Branch to sync with. Defaults to <code>main</code>.</div>
+        </div>
+        <div class="setting-item-control">
+          <input type="text" value="main" style="min-width:120px;">
+        </div>
+      </div>
+
+      <!-- ── Conflict Resolution ──────────────────────────────────── -->
+      <div class="setting-item setting-item-heading" style="margin-top:8px;">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Conflict Resolution</div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Default Strategy</div>
+          <div class="setting-item-description">
+            How to handle merge conflicts when both sides changed the same file.
+          </div>
+        </div>
+        <div class="setting-item-control">
+          <select>
+            <option selected>Manual (interactive resolver)</option>
+            <option>Always keep local</option>
+            <option>Always keep remote</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Smart Triggers section ───────────────────────────────── -->
+      <div class="setting-item setting-item-heading" style="margin-top:8px;">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Smart Sync Triggers</div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Sync on file change</div>
+          <div class="setting-item-description">Automatically sync shortly after you stop editing.</div>
+        </div>
+        <div class="setting-item-control">
+          <div class="checkbox-container"></div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Sync on vault close</div>
+          <div class="setting-item-description">Push any pending changes when Obsidian closes.</div>
+        </div>
+        <div class="setting-item-control">
+          <div class="checkbox-container is-enabled"></div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Sync on network reconnect</div>
+          <div class="setting-item-description">Resume syncing automatically when you come back online.</div>
+        </div>
+        <div class="setting-item-control">
+          <div class="checkbox-container is-enabled"></div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-item-info">
+          <div class="setting-item-name">Sync after idle (minutes)</div>
+          <div class="setting-item-description">Sync when you haven't made changes for this many minutes. Set to -1 to disable.</div>
+        </div>
+        <div class="setting-item-control">
+          <input type="number" value="-1">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

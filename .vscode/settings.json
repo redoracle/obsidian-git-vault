@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.svelte": "svelte"
+    },
+    "js/ts.validate.enable": false,
+    "js/ts.tsdk.path": "node_modules/typescript/lib",
+    "svelte.enable-ts-plugin": true,
+    "[markdown]": {
+        "editor.formatOnSave": false,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": "always"
+        }
+    }
+}

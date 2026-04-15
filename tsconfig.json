@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "module": "ESNext",
+        "target": "ES6",
+        "allowJs": true,
+        "noEmit": true,
+        "noImplicitAny": true,
+        "isolatedModules": true,
+        "moduleResolution": "bundler",
+        "strictNullChecks": true,
+        "allowSyntheticDefaultImports": true,
+        "verbatimModuleSyntax": true,
+        "forceConsistentCasingInFileNames": true,
+        "types": ["svelte", "node"],
+        "paths": {
+            "src/*": ["./src/*"]
+        },
+        "lib": ["DOM", "ES5", "ES6", "ES7"],
+        "skipLibCheck": true,
+        "noUnusedLocals": false
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.d.ts",
+        "esbuild.config.mjs",
+        "eslint.config.mjs",
+        "**/*.svelte"
+    ],
+    "exclude": ["screenshots"]
+}

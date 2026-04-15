@@ -1,0 +1,1608 @@
+.obsidian-git-force-push-label {
+    margin-left: 6px;
+    font-size: var(--font-smaller);
+}
+@keyframes loading {
+    to { transform: rotate(360deg); }
+}
+
+.workspace-leaf-content[data-type="git-view"] .button-border {
+    border: 2px solid var(--interactive-accent);
+    border-radius: var(--radius-s);
+}
+
+.workspace-leaf-content:is([data-type="git-view"], [data-type="git-history-view"])
+    .view-content {
+    padding-top: 0;
+    padding-inline: 0;
+}
+
+.loading {
+    overflow: hidden;
+}
+
+.loading > svg {
+    animation: 2s linear infinite loading;
+    transform-origin: 50% 50%;
+    display: inline-block;
+}
+
+/* Shared control primitives for icon-sized surfaces */
+.git-vault-remote-action-modal__action-icon,
+.git-vault-setup-spinner,
+.sync-change-badge,
+.git-vault-branch-refresh,
+.git-vault-md-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Obsidian's global .svg-icon color rule is often muted; re-inherit the
+   control color explicitly for plugin-specific icon surfaces. */
+.git-vault-settings-refresh-btn :is(svg, .svg-icon),
+.git-vault-branch-refresh :is(svg, .svg-icon),
+.git-vault-md-filter .svg-icon,
+.git-vault-remote-action-modal__action-icon > svg {
+    color: inherit;
+    display: block;
+    stroke: currentColor;
+    /* Ensure icons within these plugin controls are large enough to be visible
+       and consistent with other control-sized icons used across the UI. */
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Encryption indicator next to file names in the explorer */
+/* Position at the far right of explorer rows (non-invasive: only applies
+   to elements that have a data-path attribute, which are file rows). */
+div.tree-item-self.nav-file-title[data-path],
+div.nav-file-title[data-path] {
+    position: relative;
+}
+
+/* Ensure .git-tools remains a passive flex container for other controls */
+.git-tools {
+    position: static;
+}
+
+.git-vault-encryption-indicator {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+    opacity: 0.95;
+    font-size: 0.9em;
+    /* Allow tooltips and keyboard focus (non-interactive) so title/aria-label are reachable */
+    pointer-events: auto;
+    cursor: default;
+    z-index: 3;
+    color: var(--text-normal);
+    transition: color 160ms ease, opacity 160ms ease, transform 160ms ease;
+    background: transparent;
+    border-radius: 3px;
+    line-height: 1;
+    min-width: 1rem;
+}
+
+.git-vault-encryption-indicator .svg-icon,
+.git-vault-encryption-indicator > svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+}
+
+.git-vault-encryption-indicator--remote {
+    color: var(--text-muted);
+    opacity: 0.85;
+}
+
+/* Subtle hints when encryption readiness has problems */
+.git-vault-encryption-indicator[data-remote-encryption-issue="passphrase-required"] {
+    color: var(--text-warning);
+    opacity: 1;
+}
+.git-vault-encryption-indicator[data-remote-encryption-issue="passphrase-mismatched"] {
+    color: var(--text-error);
+    opacity: 1;
+}
+.git-vault-encryption-indicator[data-remote-encryption-issue="other"] {
+    color: var(--text-faint);
+    opacity: 0.9;
+}
+
+/* Non-color visual cues for accessibility and quick scanning */
+.git-vault-encryption-indicator::after {
+    /* presentational accent used when modifier classes are applied; kept small */
+    content: "";
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    line-height: 1;
+    font-size: 0.7rem;
+    text-align: center;
+    margin-left: 0;
+    pointer-events: none; /* decorative only */
+    vertical-align: middle;
+}
+
+/* Hide the base svg/icon when we show a state pseudo-icon */
+.git-vault-encryption-indicator--warning .svg-icon,
+.git-vault-encryption-indicator--warning > svg,
+.git-vault-encryption-indicator--error .svg-icon,
+.git-vault-encryption-indicator--error > svg,
+.git-vault-encryption-indicator--faint .svg-icon,
+.git-vault-encryption-indicator--faint > svg {
+    display: none;
+}
+
+
+.git-vault-encryption-indicator--warning {
+    /* Use the theme text-warning color mixed with transparent to produce
+       a muted border and background that respects theme changes. Fallback
+       to the original hex when the variable is not present. */
+    border: 1px solid color-mix(in srgb, var(--text-warning, #b08900) 60%, transparent 40%);
+    background: color-mix(in srgb, var(--text-warning, #b08900) 6%, transparent 94%);
+    color: var(--text-warning, #b08900);
+    opacity: 1;
+    padding: 0.06rem 0.12rem;
+}
+.git-vault-encryption-indicator--warning::after { content: "⚠"; color: inherit; }
+
+
+.git-vault-encryption-indicator--error {
+    /* Theme-aware error color mix with transparent for muted surfaces. */
+    border: 1px solid color-mix(in srgb, var(--text-error, #e53935) 90%, transparent 10%);
+    background: color-mix(in srgb, var(--text-error, #e53935) 6%, transparent 94%);
+    color: var(--text-error, #e53935);
+    opacity: 1;
+    padding: 0.06rem 0.12rem;
+}
+.git-vault-encryption-indicator--error::after { content: "✖"; color: inherit; }
+
+
+.git-vault-encryption-indicator--faint {
+    /* Faint uses a dashed border and very subtle background derived from
+       the theme's faint text color with a small mix to keep it low-contrast. */
+    border: 1px dashed color-mix(in srgb, var(--text-faint, #6b7280) 35%, transparent 65%);
+    background: color-mix(in srgb, var(--text-faint, #6b7280) 3%, transparent 97%);
+    color: var(--text-faint);
+    opacity: 0.95;
+    padding: 0.06rem 0.12rem;
+}
+.git-vault-encryption-indicator--faint::after { content: "•"; color: inherit; }
+
+
+/* Hint shown under passphrase input in settings when validation fails */
+.git-vault-passphrase-hint {
+    font-size: var(--font-small);
+    color: var(--text-faint);
+    margin-top: 6px;
+}
+
+.obsidian-git-center {
+    margin: auto;
+    text-align: center;
+    width: min(100%, 32rem);
+}
+
+.obsidian-git-textarea {
+    display: block;
+    box-sizing: border-box;
+    margin-inline: auto;
+    min-height: 8rem;
+    width: min(100%, 42rem);
+}
+
+.obsidian-git-disabled {
+    opacity: 0.5;
+}
+
+.git-vault-notice-host {
+    position: fixed;
+    left: 50%;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    z-index: var(--layer-notice, 1000);
+    pointer-events: none;
+}
+
+.git-vault-notice-host .notice {
+    pointer-events: auto;
+}
+
+.obsidian-git-center-button {
+    display: block;
+    margin: 20px auto;
+}
+
+.tooltip.mod-left,
+.tooltip.mod-right {
+    overflow-wrap: break-word;
+}
+
+.obsidian-git-shortcuts {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--size-2-1);
+    text-align: center;
+}
+
+.obsidian-git-shortcuts kbd + kbd {
+    margin-inline-start: 0.35rem;
+}
+
+/* Limits the scrollbar to the view body */
+.git-view {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+}
+
+/* Re-enable wrapping of nav buttons to prevent overflow on smaller screens */
+.workspace-drawer .git-view .nav-buttons-container {
+    flex-wrap: wrap;
+}
+
+.git-tools {
+    display: flex;
+    margin-left: auto;
+}
+.git-tools .type,
+.git-view .git-tools .files-count {
+    padding-left: var(--size-2-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 11px;
+}
+
+.git-tools .type[data-type="M"] { color: var(--color-yellow); }
+.git-tools .type[data-type="D"] { color: var(--color-red); }
+.git-tools .buttons {
+    display: flex;
+}
+.git-tools .buttons > * {
+    padding: 0 0;
+    height: auto;
+}
+
+.workspace-leaf-content:is([data-type="git-view"], [data-type="git-history-view"])
+    .tree-item-self {
+    align-items: center;
+}
+
+.workspace-leaf-content:is([data-type="git-view"], [data-type="git-history-view"])
+    .tree-item-self:hover
+    .clickable-icon {
+    color: var(--icon-color-hover);
+}
+
+/* Highlight an item as active if it's diff is currently opened */
+.is-active .git-tools .buttons > * {
+    color: var(--nav-item-color-active);
+}
+
+.git-author,
+.git-date,
+.git-ref {
+    color: var(--text-accent);
+}
+
+/* ====== diff2html ======
+The following styles are adapted from the obsidian-version-history plugin by
+@kometenstaub https://github.com/kometenstaub/obsidian-version-history-diff/blob/main/src/styles.scss
+which itself is adapted from the diff2html library with the following original license:
+
+   	https://github.com/rtfpessoa/diff2html/blob/master/LICENSE.md
+
+	Copyright 2014-2016 Rodrigo Fernandes https://rtfpessoa.github.io/
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+	documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+	rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+	persons to whom the Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+	Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+	WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+body {
+    --git-delete-bg: #ff475040;
+    --git-delete-hl: #96050a75;
+    --git-insert-bg: #68d36840;
+    --git-insert-hl: #23c02350;
+    --git-change-bg: #ffd55840;
+    --sp-transition-bg: background 80ms ease;
+}
+
+.git-diff {
+    .d2h-d-none {
+        display: none;
+    }
+    /* Live diff surfaces append only the line-by-line .d2h-file-diff subtree. */
+    .d2h-diff-table {
+        border-collapse: collapse;
+        font-family: var(--font-monospace);
+        font-size: var(--code-size);
+        width: 100%;
+    }
+    .d2h-file-diff {
+        border-radius: var(--radius-s);
+        font-size: var(--font-text-size);
+        line-height: var(--line-height-normal);
+    }
+    .d2h-code-line {
+        padding-inline: 6em 1.5em;
+        display: inline-block;
+        user-select: none;
+        white-space: nowrap;
+        width: 100%;
+    }
+    .d2h-code-line-ctn,
+    .d2h-code-line-prefix {
+        word-wrap: normal;
+        background: none;
+        padding: 0;
+    }
+    .d2h-code-line-ctn {
+        display: inline-block;
+        user-select: text;
+        vertical-align: middle;
+        width: 100%;
+        white-space: pre-wrap;
+    }
+    .d2h-code-line del {
+        background-color: var(--git-delete-hl);
+        color: var(--text-normal);
+    }
+    .d2h-code-line :is(del, ins) {
+        border-radius: 0.2em;
+        display: inline-block;
+        margin-top: -1px;
+        text-decoration: none;
+        vertical-align: middle;
+    }
+    .d2h-code-line ins {
+        background-color: var(--git-insert-hl);
+        text-align: left;
+    }
+    .d2h-code-line-prefix {
+        display: inline;
+        white-space: pre;
+    }
+    .line-num1 {
+        float: left;
+    }
+    .line-num1,
+    .line-num2 {
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 2.5em;
+        padding-left: 0;
+    }
+    .line-num2 {
+        float: right;
+    }
+    .d2h-code-linenumber {
+        background-color: var(--background-primary);
+        border: solid var(--background-modifier-border);
+        box-sizing: border-box;
+        color: var(--text-faint);
+        cursor: pointer;
+        text-align: right;
+        border-width: 0 1px;
+        display: inline-block;
+        position: absolute;
+        width: 5.5em;
+    }
+    .d2h-code-linenumber:after {
+        content: "\200b";
+    }
+    .d2h-emptyplaceholder,
+    .d2h-info {
+        background-color: var(--background-primary);
+        border-color: var(--background-modifier-border);
+    }
+    .d2h-code-line-prefix,
+    .d2h-code-linenumber,
+    .d2h-emptyplaceholder {
+        user-select: none;
+    }
+    .d2h-code-linenumber {
+        direction: rtl;
+    }
+    .d2h-del {
+        background-color: var(--git-delete-bg);
+        border-color: var(--git-delete-hl);
+    }
+    .d2h-ins {
+        background-color: var(--git-insert-bg);
+        border-color: var(--git-insert-hl);
+    }
+    .d2h-info {
+        color: var(--text-faint);
+    }
+    .d2h-del,
+    .d2h-ins,
+    .d2h-file-diff .d2h-change {
+        color: var(--text-normal);
+    }
+    .d2h-file-diff .d2h-del.d2h-change {
+        background-color: var(--git-change-bg);
+    }
+    .d2h-file-diff .d2h-ins.d2h-change {
+        background-color: var(--git-insert-bg);
+    }
+    /* needed for line-by-line */
+    .d2h-diff-tbody { position: relative; }
+
+    /* CodeMirror merge revert markers */
+    .cm-merge-revert { width: 4em; }
+    .cm-merge-revert > * {
+        position: absolute;
+        background-color: var(--background-secondary);
+        display: flex;
+    }
+}
+
+/* ====================== Line Authoring Information ====================== */
+
+.cm-gutterElement.obs-git-blame-gutter {
+    border-width: 0 2px 1px;
+    border-style: solid;
+    border-color: var(--background-secondary);
+    background-color: var(--background-secondary);
+}
+
+.cm-gutterElement.obs-git-blame-gutter > div,
+.line-author-settings-preview {
+    color: var(--obs-git-gutter-text);
+    font-family: monospace;
+    height: 100%;
+    text-align: right;
+    padding: 0 6px;
+    white-space: pre;
+}
+
+.git-split-diff-view .cm-deletedLine .cm-changedText {
+    background-color: #ee443330;
+}
+
+.git-split-diff-view .cm-insertedLine .cm-changedText {
+    background-color: #22bb2230;
+}
+
+.git-vault-settings-refresh-btn {
+    color: var(--text-normal);
+}
+
+.git-obscure-prompt[git-is-obscured="true"] #git-show-password:after {
+    -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+    mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+}
+
+.git-obscure-prompt[git-is-obscured="false"] #git-show-password:after {
+    -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-eye-off"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path><path d="m2 2 20 20"></path></svg>');
+    mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-eye-off"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path><path d="m2 2 20 20"></path></svg>');
+}
+
+/* Override styling of Codemirror merge view "collapsed lines" indicator */
+.git-split-diff-view .ͼ2 .cm-collapsedLines {
+    background: var(--interactive-normal);
+    border-radius: var(--radius-m);
+    color: var(--text-accent);
+    font-size: var(--font-small);
+    padding: var(--size-4-1);
+    transition: var(--sp-transition-bg);
+}
+.git-split-diff-view .ͼ2 .cm-collapsedLines:hover {
+    background: var(--interactive-hover);
+    color: var(--text-accent-hover);
+}
+
+.git-signs-gutter {
+    .cm-gutterElement {
+        /* Needed to align the sign properly for different line heights, such as
+         * when having a heading or list item.
+         */
+        display: grid;
+        padding-top: 0 !important;
+    }
+}
+
+.git-gutter-marker:hover { border-radius: 2px; }
+
+.git-gutter-marker.git-add,
+.git-gutter-marker.git-change {
+    justify-self: center;
+    height: inherit;
+    width: 0.2rem;
+}
+.git-gutter-marker.git-add    { background-color: var(--color-green); }
+.git-gutter-marker.git-change { background-color: var(--color-yellow); }
+
+.git-gutter-marker.git-changedelete {
+    color: var(--color-yellow);
+    font-weight: var(--font-bold);
+    font-size: 1rem;
+    justify-self: center;
+    height: inherit;
+}
+
+.git-gutter-marker.git-delete,
+.git-gutter-marker.git-topdelete {
+    background-color: var(--color-red);
+    height: 0.2rem;
+    width: 0.8rem;
+}
+.git-gutter-marker.git-delete    { align-self: end; }
+.git-gutter-marker.git-topdelete { align-self: start; }
+
+.git-signs-gutter .cm-gutterElement:hover > .git-gutter-marker.git-add,
+.git-signs-gutter .cm-gutterElement:hover > .git-gutter-marker.git-change {
+    width: 0.6rem;
+}
+
+.git-signs-gutter .cm-gutterElement:hover > .git-gutter-marker.git-delete,
+.git-signs-gutter .cm-gutterElement:hover > .git-gutter-marker.git-topdelete {
+    height: 0.6rem;
+}
+
+.git-gutter-marker.staged { opacity: 0.5; }
+
+/* Prevent shifting of the editor when git signs gutter is the only gutter present */
+.cm-gutters.cm-gutters-before:has(> .git-signs-gutter:only-child) {
+    margin-inline-end: 0;
+    .git-signs-gutter {
+        margin-inline-start: -1rem;
+    }
+}
+
+.git-changes-status-bar-colored {
+    .git-add {
+        color: var(--color-green);
+    }
+    .git-change {
+        color: var(--color-yellow);
+    }
+    .git-delete {
+        color: var(--color-red);
+    }
+}
+
+.git-changes-status-bar .git-add,
+.git-changes-status-bar .git-change {
+    margin-right: 0.3em;
+}
+
+/* ── Shared text and overflow patterns ─────────────────────────────────── */
+
+/* Text truncation used across list rows and preview labels */
+.git-vault-fh-message,
+.git-vault-fh-preview-label,
+.git-vault-conflict-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Path/readout surfaces reused across conflict, bootstrap, and metadata UI */
+.git-vault-conflict-path,
+.git-vault-bootstrap-path,
+.git-vault-metadata-path {
+    color: var(--text-muted);
+    font-family: var(--font-monospace);
+    font-size: var(--font-small);
+}
+
+.git-vault-conflict-path,
+.git-vault-bootstrap-path {
+    background: var(--background-secondary);
+}
+
+/* Uppercase section label — conflict headers, column headers */
+.git-vault-conflict-col-header {
+    font-size: var(--font-smaller);
+    font-weight: var(--font-semibold);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* State/placeholder message — loading, empty, error, fetching */
+.git-vault-fh-loading,
+.git-vault-fh-empty,
+.git-vault-fh-preview-loading,
+.git-vault-fh-error {
+    padding: 2rem;
+    text-align: center;
+    line-height: var(--line-height-normal);
+}
+
+.git-vault-fh-loading,
+.git-vault-fh-empty,
+.git-vault-fh-preview-loading {
+    color: var(--text-muted);
+}
+
+/* ── Conflict resolution modal ─────────────────────────────────────────── */
+
+.git-vault-conflict-modal {
+    width: min(92vw, 900px);
+}
+
+.git-vault-conflict-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-bottom: 0.6rem;
+}
+
+.git-vault-conflict-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--background-modifier-border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.git-vault-conflict-progress-fill {
+    height: 100%;
+    background: var(--color-blue);
+    border-radius: 2px;
+    transition: width 0.2s ease;
+}
+
+.git-vault-conflict-progress-label {
+    font-size: var(--font-smaller);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.git-vault-conflict-path,
+.git-vault-metadata-path {
+    margin-bottom: 0.75rem;
+}
+
+.git-vault-conflict-binary-info {
+    background: var(--background-secondary);
+}
+
+.git-vault-conflict-path {
+    border-radius: var(--radius-s);
+    padding: 0.2em 0.6em;
+}
+
+.git-vault-conflict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Keep text containers shrink-safe in flex/grid layouts */
+.git-vault-conflict-col,
+.git-vault-fh-info,
+.git-vault-remote-action-modal__action-text {
+    min-width: 0;
+}
+
+/* Preserve single-line metadata and control labels where wrapping harms layout */
+.git-vault-conflict-progress-label,
+.git-vault-fh-date,
+.git-vault-fh-author,
+.git-vault-remote-action-modal__action-btn {
+    white-space: nowrap;
+}
+
+.git-vault-conflict-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* Extra margin only when the header is inside the manual-edit section */
+.git-vault-manual-section .git-vault-conflict-col-header {
+    margin-bottom: 0.3rem;
+}
+
+.git-vault-conflict-content,
+.git-vault-manual-textarea {
+    background: var(--code-background);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: 0.5em;
+    font-size: var(--font-smaller);
+}
+
+.git-vault-conflict-content {
+    flex: 1;
+    max-height: 260px;
+    overflow: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.git-vault-conflict-content code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.git-vault-conflict-binary-info {
+    padding: 1rem;
+    border-radius: var(--radius-m);
+    color: var(--text-muted);
+    font-size: var(--font-small);
+    margin-bottom: 0.75rem;
+    text-align: center;
+}
+
+.git-vault-manual-section {
+    margin-bottom: 0.75rem;
+}
+
+.git-vault-manual-textarea {
+    width: 100%;
+    min-height: 160px;
+    color: var(--text-normal);
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.git-vault-conflict-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+/* Spacer that pushes Skip to the trailing edge */
+.git-vault-btn-sep { flex: 1; }
+.git-vault-btn-skip { color: var(--text-muted); }
+
+.git-vault-conflict-hints {
+    font-size: var(--font-smaller);
+    color: var(--text-faint);
+}
+
+.git-vault-conflict-hints kbd {
+    display: inline-block;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: 0 0.3em;
+    font-size: 0.85em;
+    line-height: 1.6;
+}
+
+/* ── Finished screen ─────────────────────────────────────────────────────── */
+
+.git-vault-conflict-finished-icon {
+    font-size: 2rem;
+    text-align: center;
+    padding: 0.5rem 0;
+    color: var(--color-green);
+}
+
+.git-vault-conflict-finished-skipped {
+    color: var(--text-warning);
+    font-size: var(--font-small);
+    margin-bottom: 0.75rem;
+}
+
+.git-vault-conflict-finished-actions {
+    margin-top: 1rem;
+}
+
+/* ── File history modal ──────────────────────────────────────────────────── */
+
+.git-vault-file-history-modal {
+    max-width: 720px;
+    width: 90vw;
+}
+
+.git-vault-file-history-modal .modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* ── Shared button utilities ─────────────────────────────────────────────── */
+
+.git-vault-btn-secondary,
+.git-vault-branch-refresh,
+.git-vault-md-filter,
+.git-vault-remote-action-modal__action-btn {
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.git-vault-btn-secondary {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+}
+
+.git-vault-btn-secondary:hover {
+    background: var(--background-secondary-alt);
+}
+
+.git-vault-btn-loading {
+    opacity: 0.75;
+    pointer-events: none;
+    position: relative;
+}
+
+.git-vault-btn-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0.65rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-top: -0.4rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: 0.8s linear infinite loading;
+}
+
+.git-vault-fh-error,
+.git-vault-metadata-error {
+    color: var(--text-error);
+}
+
+/* ── File history list ───────────────────────────────────────────────────── */
+
+.git-vault-fh-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.git-vault-fh-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--background-modifier-border);
+    transition: var(--sp-transition-bg);
+}
+
+.git-vault-fh-row:hover {
+    background: var(--background-secondary);
+}
+
+.git-vault-fh-info {
+    flex: 1;
+}
+
+/* Shared truncation rule above applies here */
+.git-vault-fh-message {
+    font-weight: 500;
+}
+
+.git-vault-fh-meta,
+.git-vault-fh-confirm-warn {
+    font-size: var(--font-smallest);
+}
+
+.git-vault-fh-meta,
+.git-vault-fh-preview-label,
+.git-vault-fh-confirm-detail {
+    color: var(--text-muted);
+}
+
+.git-vault-fh-meta {
+    display: flex;
+    gap: 0.4em;
+    align-items: baseline;
+    margin-top: 0.15rem;
+}
+
+.git-vault-fh-actions {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.git-vault-fh-actions button {
+    font-size: var(--font-smallest);
+    padding: 0.2em 0.6em;
+}
+
+/* ── Preview pane ────────────────────────────────────────────────────────── */
+
+.git-vault-fh-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Shared truncation rule above applies here */
+.git-vault-fh-preview-label {
+    flex: 1;
+    font-size: var(--font-small);
+}
+
+.git-vault-fh-preview-container {
+    max-height: 55vh;
+    overflow: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+}
+
+.git-vault-fh-preview-code {
+    margin: 0;
+    padding: 0.75rem;
+    font-size: var(--font-small);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Restore confirmation ────────────────────────────────────────────────── */
+
+.git-vault-fh-confirm {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.git-vault-fh-confirm h3 {
+    margin-bottom: 0.5rem;
+}
+
+.git-vault-fh-confirm-detail {
+    margin-bottom: 0.5rem;
+}
+
+.git-vault-fh-confirm-warn {
+    color: var(--text-faint);
+    margin-bottom: 1rem;
+}
+
+.git-vault-fh-confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* ── Sync metadata panel ─────────────────────────────────────────────────── */
+
+.git-vault-metadata-path {
+    overflow-wrap: anywhere;
+}
+
+.git-vault-setup-modal .modal-content,
+.git-vault-bootstrap-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.git-vault-setup-modal-body {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 4rem;
+}
+
+.git-vault-setup-spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    background: var(--background-secondary);
+    color: var(--text-accent);
+    animation: loading 1s linear infinite;
+}
+
+.git-vault-setup-spinner.is-failed {
+    animation: none;
+    color: var(--text-error);
+}
+
+.git-vault-setup-status,
+.git-vault-bootstrap-path {
+    margin: 0;
+    word-break: break-word;
+}
+
+.git-vault-bootstrap-path {
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--radius-m);
+}
+
+.git-vault-bootstrap-steps {
+    margin: 0;
+    padding-left: 1.4rem;
+}
+
+/* ── Settings search bar ─────────────────────────────────────────────────── */
+
+.obsidian-git-settings-search {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 8px 0 4px;
+    background: var(--background-primary);
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.obsidian-git-settings-search-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--input-radius, var(--radius-s));
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 80ms ease, box-shadow 80ms ease;
+}
+
+.obsidian-git-settings-search-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* ── API remote action modal ───────────────────────────────────────────── */
+
+.git-vault-remote-action-modal {
+    padding-bottom: var(--size-4-2);
+}
+
+.git-vault-remote-action-modal__intro,
+.git-vault-remote-action-modal__action-desc {
+    color: var(--text-muted);
+    line-height: var(--line-height-normal);
+}
+
+.git-vault-remote-action-modal__intro {
+    font-size: var(--font-ui-small);
+    margin: 0 0 var(--size-4-4);
+}
+
+.git-vault-remote-action-modal__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+/* Each action row: icon | text | button */
+.git-vault-remote-action-modal__action {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-3);
+    padding: var(--size-4-3) var(--size-4-2);
+    border-radius: var(--radius-m);
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    transition: var(--sp-transition-bg);
+}
+
+.git-vault-remote-action-modal__action:hover {
+    background: var(--background-modifier-hover);
+}
+
+.git-vault-remote-action-modal__action--cancel {
+    background: transparent;
+    border-color: transparent;
+    opacity: 0.7;
+}
+
+.git-vault-remote-action-modal__action--cancel:hover {
+    background: var(--background-modifier-hover);
+    opacity: 1;
+}
+
+.git-vault-remote-action-modal__action-icon {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    color: var(--text-accent);
+    opacity: 0.85;
+}
+
+.git-vault-remote-action-modal__action-icon > svg {
+    width: 18px;
+    height: 18px;
+}
+
+.git-vault-remote-action-modal__action-text {
+    flex: 1 1 auto;
+}
+
+.git-vault-remote-action-modal__action-label {
+    font-weight: var(--font-semibold);
+    font-size: var(--font-ui-medium);
+    color: var(--text-normal);
+    margin-bottom: 2px;
+}
+
+.git-vault-remote-action-modal__action-desc {
+    font-size: var(--font-ui-small);
+}
+
+.git-vault-remote-action-modal__action-btn {
+    flex: 0 0 auto;
+}
+
+/* Cancel row keeps the button minimal */
+.git-vault-remote-action-modal__action--cancel
+    .git-vault-remote-action-modal__action-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.git-vault-remote-action-modal__action--cancel
+    .git-vault-remote-action-modal__action-btn:hover {
+    color: var(--text-normal);
+    border-color: var(--interactive-accent);
+}
+
+/* ── Responsive breakpoints ─────────────────────────────────────────────── */
+
+@media (max-width: 800px) {
+    .cm-gutterElement.obs-git-blame-gutter { display: none; }
+}
+
+@media (max-width: 700px) {
+    /* Maintain explorer row padding and encryption indicator placement
+       for narrow viewports (previously duplicated earlier in the file). */
+    div.tree-item-self.nav-file-title[data-path],
+    div.nav-file-title[data-path] {
+        padding-right: 1.8rem;
+    }
+    .git-vault-encryption-indicator {
+        right: 0.35rem;
+    }
+
+    .git-vault-conflict-grid { grid-template-columns: 1fr; }
+    .git-vault-fh-row { align-items: stretch; flex-direction: column; }
+    .git-vault-fh-actions { justify-content: flex-end; }
+}
+
+@media (max-width: 480px) {
+    .git-vault-remote-action-modal__action { flex-wrap: wrap; }
+    .git-vault-remote-action-modal__action-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: var(--size-2-1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Git View – scoped nav helpers
+   (consolidated from sourceControl.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.git-view .nav-files-container {
+    position: relative;
+}
+
+.git-view .nav-header,
+.git-view .nav-branch {
+    display: flex;
+    align-items: center;
+}
+
+.git-view .nav-header {
+    gap: 8px;
+}
+
+.git-view .nav-branch {
+    padding-left: var(--size-2-1);
+    gap: 4px;
+}
+
+.git-view .simple-nav-header {
+    padding: 8px 16px 0;
+}
+
+.workspace-leaf-content:is([data-type="git-view"], [data-type="git-history-view"])
+    .nav-folder-title-content {
+    display: flex;
+    align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tree / list helper utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Folder icon prefix used in tree nodes (treeComponent, logTreeComponent) */
+.git-folder-icon-prefix {
+    padding-right: 5px;
+    display: flex;
+}
+
+/* Spacer that aligns with the .git-tools .type badge width (11 px) */
+.git-action-spacer {
+    width: 11px;
+}
+
+/* Bottom padding for the history list sentinel */
+.git-history-list-end {
+    margin-bottom: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Branch selector
+   (consolidated from branchSelect.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.branch-select {
+    height: 28px;
+    min-width: 140px;
+    padding: 2px 6px;
+    background-color: var(--background-modifier-form-field);
+    border-radius: 4px;
+    border: 1px solid var(--interactive-accent);
+}
+
+.branch-select:focus,
+.branch-select:focus-visible {
+    border-color: var(--interactive-accent-hover);
+    outline: none;
+    box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--interactive-accent-hover) 30%, transparent);
+}
+
+.branch-select.has-error {
+    border-color: var(--text-warning);
+}
+
+.branch-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MD-filter toggle button
+   (consolidated from nonMdFilter.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.git-vault-branch-refresh,
+.git-vault-md-filter {
+    flex-shrink: 0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.git-vault-md-filter {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--text-faint);
+    opacity: 0.7;
+}
+
+.git-vault-branch-refresh:focus-visible,
+.git-vault-md-filter:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+.git-vault-md-filter:hover {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+.git-vault-md-filter:focus-visible {
+    opacity: 1;
+}
+
+.git-vault-md-filter.is-active {
+    color: var(--interactive-accent);
+    opacity: 1;
+}
+
+.git-vault-md-filter .svg-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Simple Sync panel
+   (consolidated from simpleSync.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+.git-vault-simple {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+.git-vault-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.git-vault-title {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.git-vault-provider-badge {
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.git-vault-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875em;
+    color: var(--text-muted);
+}
+
+.git-vault-status-dot {
+    --git-vault-status-dot-color: var(--text-faint);
+    --git-vault-status-dot-animation: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--git-vault-status-dot-color);
+    animation: var(--git-vault-status-dot-animation);
+}
+
+.status-ok .git-vault-status-dot {
+    --git-vault-status-dot-color: var(--color-green);
+}
+.status-syncing .git-vault-status-dot {
+    --git-vault-status-dot-color: var(--color-yellow);
+    --git-vault-status-dot-animation: pulse 1s infinite;
+}
+.status-error .git-vault-status-dot {
+    --git-vault-status-dot-color: var(--color-red);
+}
+.status-conflict .git-vault-status-dot {
+    --git-vault-status-dot-color: var(--color-orange);
+}
+.status-offline .git-vault-status-dot {
+    --git-vault-status-dot-color: var(--text-faint);
+}
+
+.git-vault-sync-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: var(--radius-m);
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.git-vault-sync-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.git-vault-conflict-btn {
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius-m);
+    background: var(--background-modifier-error);
+    color: var(--text-on-accent);
+    border: none;
+    cursor: pointer;
+    font-size: 0.875em;
+    font-weight: 500;
+}
+
+.git-vault-meta {
+    display: flex;
+    gap: 6px;
+    font-size: 0.75em;
+    color: var(--text-faint);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Source control – commit message UI
+   (consolidated from sourceControl.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.commit-msg-input {
+    width: 100%;
+    overflow: hidden;
+    resize: none;
+    padding: 7px 5px;
+    background-color: var(--background-modifier-form-field);
+}
+
+.git-commit-msg {
+    position: relative;
+    padding: 0;
+    width: calc(100% - var(--size-4-8));
+    margin: 4px auto;
+}
+
+.git-commit-msg-clear-button {
+    position: absolute;
+    background: transparent;
+    border-radius: 50%;
+    color: var(--search-clear-button-color);
+    cursor: var(--cursor);
+    top: -4px;
+    right: 2px;
+    bottom: 0;
+    line-height: 0;
+    height: var(--input-height);
+    width: 28px;
+    margin: auto;
+    padding: 0;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: color 0.15s ease-in-out;
+}
+
+.git-commit-msg-clear-button::after {
+    content: "";
+    height: var(--search-clear-button-size);
+    width: var(--search-clear-button-size);
+    display: block;
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,<svg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M6 12C9.31371 12 12 9.31371 12 6C12 2.68629 9.31371 0 6 0C2.68629 0 0 2.68629 0 6C0 9.31371 2.68629 12 6 12ZM3.8705 3.09766L6.00003 5.22718L8.12955 3.09766L8.9024 3.8705L6.77287 6.00003L8.9024 8.12955L8.12955 8.9024L6.00003 6.77287L3.8705 8.9024L3.09766 8.12955L5.22718 6.00003L3.09766 3.8705L3.8705 3.09766Z' fill='currentColor'/></svg>");
+    mask-repeat: no-repeat;
+    -webkit-mask-image: url("data:image/svg+xml,<svg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M6 12C9.31371 12 12 9.31371 12 6C12 2.68629 9.31371 0 6 0C2.68629 0 0 2.68629 0 6C0 9.31371 2.68629 12 6 12ZM3.8705 3.09766L6.00003 5.22718L8.12955 3.09766L8.9024 3.8705L6.77287 6.00003L8.9024 8.12955L8.12955 8.9024L6.00003 6.77287L3.8705 8.9024L3.09766 8.12955L5.22718 6.00003L3.09766 3.8705L3.8705 3.09766Z' fill='currentColor'/></svg>");
+    -webkit-mask-repeat: no-repeat;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Source control – API sync hints and change badges
+   (consolidated from sourceControl.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sync-api-hint {
+    --git-vault-hint-color: var(--text-muted);
+    padding: 10px 14px;
+    font-size: 0.85em;
+    color: var(--git-vault-hint-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sync-api-hint--ok {
+    --git-vault-hint-color: var(--color-green);
+}
+.sync-api-hint--error {
+    --git-vault-hint-color: var(--color-red);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.sync-api-hint--syncing {
+    --git-vault-hint-color: var(--color-yellow);
+}
+
+.sync-api-hint-icon { font-size: 1.1em; }
+
+.sync-change-badge {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 0.7em;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.sync-change-badge--added {
+    background: color-mix(in srgb, var(--color-green) 20%, transparent);
+    color: var(--color-green);
+}
+
+.sync-change-badge--deleted {
+    background: color-mix(in srgb, var(--color-red) 20%, transparent);
+    color: var(--color-red);
+}
+
+.sync-change-badge--modified {
+    background: color-mix(in srgb, var(--color-yellow) 20%, transparent);
+    color: var(--color-yellow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Source control – branch refresh button
+   (consolidated from sourceControl.svelte <style> block)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.git-vault-branch-refresh {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--background-modifier-border-hover);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+}
+
+.git-vault-branch-refresh__icon {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+}
+
+.git-vault-branch-refresh__icon :is(svg, .svg-icon) {
+    width: 100%;
+    height: 100%;
+}
+
+.git-vault-branch-refresh:hover {
+    color: var(--text-accent);
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+
+.git-vault-branch-refresh:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.git-vault-conflict-path,
+.git-vault-conflict-content,
+.git-vault-manual-textarea,
+.git-vault-fh-hash,
+.git-vault-conflict-hints kbd {
+    font-family: var(--font-monospace);
+}
+
+.git-vault-git-advanced-details {
+    border-top: 1px solid var(--background-modifier-border);
+    margin-top: 12px;
+    padding-top: 8px;
+}
+
+.git-vault-git-advanced-summary {
+    color: var(--text-normal);
+    cursor: pointer;
+    font-weight: 600;
+    padding: 8px 0;
+}
+
+.git-vault-git-advanced-description {
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+    margin-bottom: 4px;
+}
+
+.git-vault-git-advanced-content {
+    padding-left: 2px;
+}

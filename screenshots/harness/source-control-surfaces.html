@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Git Vault Source Control Surfaces</title>
+    <link rel="stylesheet" href="./_base.css" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+        body {
+            min-height: 100vh;
+            padding: 24px;
+            background:
+                radial-gradient(circle at top, rgba(83, 176, 194, 0.12), transparent 30%),
+                linear-gradient(180deg, #141414 0%, #0f0f10 100%);
+        }
+
+        #screenshot-target {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .surface-card {
+            display: grid;
+            gap: 10px;
+        }
+
+        .surface-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+        }
+
+        .workspace-leaf-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            background: var(--background-primary);
+        }
+
+        .workspace-leaf-content .view-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .clickable-icon,
+        .nav-action-button,
+        .git-vault-branch-refresh,
+        .git-vault-md-filter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clickable-icon,
+        .nav-action-button {
+            color: var(--icon-color);
+        }
+
+        .clickable-icon:hover,
+        .nav-action-button:hover {
+            color: var(--icon-color-hover);
+        }
+
+        .svg-icon {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+
+        .nav-header {
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-branch {
+            margin-left: auto;
+        }
+
+        .nav-folder-children {
+            padding-left: 12px;
+        }
+
+        .tree-item-children {
+            display: grid;
+            gap: 4px;
+            padding: 2px 6px 6px;
+        }
+
+        .nav-file {
+            margin: 0;
+        }
+
+        .nav-file-title {
+            padding-right: 8px;
+        }
+
+        .panel-note {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div id="screenshot-target">
+        <section class="surface-card">
+            <div class="surface-label">Advanced Git View</div>
+            <div class="screenshot-wrap">
+                <div class="workspace-leaf-content" data-type="git-view">
+                    <main class="git-view">
+                        <div class="nav-header">
+                            <div class="nav-buttons-container">
+                                <div class="clickable-icon nav-action-button" aria-label="Commit and sync">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Commit">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Push">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Layout">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                </div>
+                            </div>
+                            <div class="nav-branch">
+                                <select class="branch-select" aria-label="Branch">
+                                    <option selected>main</option>
+                                    <option>release/1.0</option>
+                                    <option>feature/mobile-sync</option>
+                                </select>
+                                <button class="git-vault-branch-refresh" aria-label="Refresh branch list">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </button>
+                                <button class="git-vault-md-filter is-active" aria-label="Filter Markdown files">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5h16"></path><path d="M7 12h10"></path><path d="M10 19h4"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="git-commit-msg">
+                            <textarea rows="2" class="commit-msg-input">Prepare release notes and sync onboarding docs</textarea>
+                            <div class="git-commit-msg-clear-button" aria-label="Clear"></div>
+                        </div>
+
+                        <div class="nav-files-container">
+                            <div class="tree-item nav-folder mod-root">
+                                <div class="staged tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="tree-item-inner nav-folder-title-content">Staged Changes</div>
+                                        <div class="git-tools">
+                                            <div class="buttons">
+                                                <div class="clickable-icon" aria-label="Unstage all">
+                                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                                </div>
+                                            </div>
+                                            <div class="files-count">2</div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item-children nav-folder-children">
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Projects/Q4-Plan.md">
+                                                <div class="tree-item-inner nav-file-title-content">Projects/Q4-Plan.md</div>
+                                                <div class="git-tools">
+                                                    <div class="buttons">
+                                                        <div class="clickable-icon" aria-label="Open file">
+                                                            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                    <span class="type" data-type="M">M</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Meeting Notes/2026-04-11.md">
+                                                <div class="tree-item-inner nav-file-title-content">Meeting Notes/2026-04-11.md</div>
+                                                <div class="git-tools"><span class="type" data-type="A">A</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self is-clickable nav-folder-title">
+                                        <div class="tree-item-icon nav-folder-collapse-indicator collapse-icon">
+                                            <svg class="svg-icon right-triangle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L12 17L21 8"></path></svg>
+                                        </div>
+                                        <div class="tree-item-inner nav-folder-title-content">Changes</div>
+                                        <div class="git-tools">
+                                            <div class="buttons">
+                                                <div class="clickable-icon" aria-label="Stage all">
+                                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                                </div>
+                                                <div class="clickable-icon" aria-label="Discard all">
+                                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                                </div>
+                                            </div>
+                                            <div class="files-count">3</div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item-children nav-folder-children">
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Daily Notes/2026-04-11.md">
+                                                <div class="tree-item-inner nav-file-title-content">Daily Notes/2026-04-11.md</div>
+                                                <div class="git-tools"><span class="type" data-type="M">M</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Projects/Roadmap.md">
+                                                <div class="tree-item-inner nav-file-title-content">Projects/Roadmap.md</div>
+                                                <div class="git-tools"><span class="type" data-type="A">A</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self is-clickable nav-file-title" data-path="Archive/old-plan.md">
+                                                <div class="tree-item-inner nav-file-title-content">Archive/old-plan.md</div>
+                                                <div class="git-tools"><span class="type" data-type="D">D</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface-card">
+            <div class="surface-label">API Pending Changes</div>
+            <div class="screenshot-wrap">
+                <div class="workspace-leaf-content" data-type="git-view">
+                    <main class="git-view">
+                        <div class="nav-header">
+                            <div class="nav-buttons-container">
+                                <div class="clickable-icon nav-action-button" aria-label="Sync now">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </div>
+                                <div class="clickable-icon nav-action-button" aria-label="Refresh">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </div>
+                            </div>
+                            <div class="nav-branch">
+                                <select class="branch-select" aria-label="Branch">
+                                    <option selected>main</option>
+                                    <option>release/mobile</option>
+                                </select>
+                                <button class="git-vault-branch-refresh" aria-label="Refresh branch list">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6"></path><path d="M2.5 22v-6h6"></path><path d="M2 11.5a10 10 0 0 1 18.8-4.3"></path><path d="M22 12.5a10 10 0 0 1-18.8 4.2"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="nav-files-container">
+                            <div class="sync-api-hint sync-api-hint--ok">
+                                <span class="sync-api-hint-icon">✓</span>
+                                All files synced · 2:41 PM
+                            </div>
+                            <div class="tree-item nav-folder mod-root">
+                                <div class="tree-item nav-folder">
+                                    <div class="tree-item-self nav-folder-title">
+                                        <div class="tree-item-inner nav-folder-title-content">Pending Changes</div>
+                                        <div class="git-tools"><div class="files-count">3</div></div>
+                                    </div>
+                                    <div class="tree-item-children nav-folder-children">
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self nav-file-title">
+                                                <div class="tree-item-inner nav-file-title-content">Projects/Release Checklist.md</div>
+                                                <span class="sync-change-badge sync-change-badge--modified" title="Projects/Release Checklist.md">M</span>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self nav-file-title">
+                                                <div class="tree-item-inner nav-file-title-content">Inbox/Ideas.md</div>
+                                                <span class="sync-change-badge sync-change-badge--added" title="Inbox/Ideas.md">A</span>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item nav-file">
+                                            <div class="tree-item-self nav-file-title">
+                                                <div class="tree-item-inner nav-file-title-content">Archive/2025-Q4.md</div>
+                                                <span class="sync-change-badge sync-change-badge--deleted" title="Archive/2025-Q4.md">D</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sync-api-hint sync-api-hint--error">Remote rejected the latest push because the selected branch moved ahead.</div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+            <p class="panel-note">Covers the advanced Git view, branch controls, commit editor, API hints, and pending-change badges in one file-backed harness.</p>
+        </section>
+    </div>
+</body>
+</html>
