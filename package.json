@@ -60,7 +60,7 @@
         "@codemirror/merge": "^6.12.1",
         "@codemirror/search": "^6.6.0",
         "@codemirror/state": "^6.6.0",
-        "@codemirror/view": "^6.41.0",
+        "@codemirror/view": "^6.41.1",
         "buffer": "^6.0.3",
         "codemirror": "^6.0.2",
         "css-color-converter": "^2.0.0",
