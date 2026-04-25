@@ -1123,6 +1123,31 @@ export class SimpleGit extends GitManager {
         await this.setGitInstance();
     }
 
+    async addSubmodule(url: string, submodulePath: string): Promise<void> {
+        const vaultPath = (
+            this.app.vault.adapter as FileSystemAdapter
+        ).getBasePath();
+        // Validate the path stays inside the vault and get normalized absolute path
+        const resolvedPath = this.resolveVaultChildPath(
+            vaultPath,
+            submodulePath
+        );
+        // Convert to relative path for git (relative to repository root)
+        let relativePath = path.relative(this.absoluteRepoPath, resolvedPath);
+        if (Platform.isWin) {
+            relativePath = relativePath.replace(/\\/g, "/");
+        }
+
+        this.plugin.setPluginState({ gitAction: CurrentGitAction.add });
+        try {
+            // Pass the relative path to git
+            await this.git.subModule(["add", url, relativePath]);
+            await this.git.subModule(["update", "--init", "--recursive"]);
+        } finally {
+            this.plugin.setPluginState({ gitAction: CurrentGitAction.idle });
+        }
+    }
+
     private resolveVaultChildPath(
         vaultPath: string,
         childPath: string

@@ -792,6 +792,14 @@ export class IsomorphicGit extends GitManager {
         }
     }
 
+    addSubmodule(_url: string, _submodulePath: string): Promise<void> {
+        return Promise.reject(
+            new Error(
+                "Submodule operations are not supported with the isomorphic-git backend. Switch to simple-git (desktop) to use submodules."
+            )
+        );
+    }
+
     async setConfig(
         path: string,
         value: string | number | boolean | undefined

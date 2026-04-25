@@ -90,6 +90,32 @@ export abstract class GitManager {
 
     abstract clone(url: string, dir: string, depth?: number): Promise<void>;
 
+    /**
+     * Add a git submodule to the current repository.
+     *
+     * The submodule will be cloned from the given URL and placed at the specified
+     * path within the vault. The path is validated to ensure it stays inside the
+     * vault boundaries to prevent path traversal attacks.
+     *
+     * Typical usage: UI flows that allow users to embed another repository as a
+     * subdirectory of the current vault. After successful addition, the submodule
+     * is initialized and updated recursively.
+     *
+     * @param url - Repository URL for the submodule. Supports standard git URL
+     *              formats (HTTPS, SSH, git+ssh, file://, etc.). Authentication
+     *              follows the repository's configured credential helpers.
+     * @param submodulePath - Path relative to the vault root where the submodule
+     *                        should be placed. Must not contain path traversal
+     *                        sequences (e.g., "..") that would place it outside
+     *                        the vault. Will be normalized (e.g., "./dir" becomes "dir").
+     * @throws {Error} If the path would place the submodule outside the vault.
+     * @throws {Error} If the URL is invalid or inaccessible (network/auth errors).
+     * @throws {Error} If the submodule path already exists in the repository.
+     * @throws {Error} If submodule operations are not supported by the backend
+     *                 (e.g., isomorphic-git on mobile).
+     */
+    abstract addSubmodule(url: string, submodulePath: string): Promise<void>;
+
     abstract setConfig(
         path: string,
         value: string | number | boolean | undefined

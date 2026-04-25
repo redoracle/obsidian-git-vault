@@ -63,7 +63,20 @@ export interface ProviderSectionContext extends BaseSettingsSectionContext {
     persistAndReloadSync: () => Promise<void>;
     reloadSyncManager: () => Promise<void>;
     scheduleApiRemoteTargetPrompt: () => void;
+    runApiRemoteTargetWorkflow: () => Promise<void>;
     setDropdownOptions: SetDropdownOptions;
+    /**
+     * Whether the vault has already been linked to a sync target (i.e. the
+     * lastSyncedRepoFingerprint is non-empty). When true, repo/branch changes
+     * should be confirmed before being persisted.
+     */
+    isVaultLinked: boolean;
+    /**
+     * Persist a repo+branch target change, optionally showing a confirmation
+     * modal if the vault is already linked. Returns true when the change was
+     * committed, false when the user cancelled.
+     */
+    confirmTargetChange: (repo: string, branch: string) => Promise<boolean>;
 }
 
 export interface GitHubProviderSectionContext extends ProviderSectionContext {

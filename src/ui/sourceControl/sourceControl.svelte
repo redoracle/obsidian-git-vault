@@ -38,9 +38,8 @@
     let branchesList = $state([] as string[]);
     let currentBranch = $state("");
     let checkoutInProgress = $state(false);
-    // Loading/error state for fetching the available branches.
-    let fetchingBranches = $state(false);
-    let fetchBranchesError = $state(null as string | null);
+    // Loading/error state for fetching the available branches is now derived
+    // from SyncState.branchSelectionStatus (see $derived declarations below).
     let syncMode: SyncUXMode = $state("advanced");
     // True after the user switches branch (API providers) so the panel shows
     // a "pull to load new branch" hint until the next sync completes.
@@ -70,6 +69,10 @@
         lastError: null,
         lastErrorCode: null,
         cachedGitStatus: null,
+        branchSelection: null,
+        branchSelectionStatus: "idle" as SyncState["branchSelectionStatus"],
+        branchSelectionError: null,
+        providerReady: false,
     });
     let unsubscribeSyncState: () => void = () => {};
     // Initialise to a safe default to satisfy Svelte 5 runes (reading a
@@ -82,7 +85,7 @@
         activeProvider = plugin.settings.activeSyncProvider;
     }
     const branchSelectorReady = $derived(
-        activeProvider === "git" ? plugin.gitReady : Boolean(plugin.syncManager)
+        activeProvider === "git" ? plugin.gitReady : syncState.providerReady
     );
     const branchSelectorBlocked = $derived(
         syncState.isSyncing || plugin.state.gitAction !== CurrentGitAction.idle
@@ -100,6 +103,16 @@
     // ── Non-Markdown file filter ──────────────────────────────────────────
     // When false (default), the source-control panel hides non-.md files.
     let showNonMdFiles = $state(false);
+
+    // ── Branch selection status (derived from SyncState) ────────────────────
+    const fetchingBranches = $derived(
+        syncState.branchSelectionStatus === "loading"
+    );
+    const fetchBranchesError = $derived(
+        syncState.branchSelectionStatus === "error"
+            ? syncState.branchSelectionError ?? "Failed to load branches"
+            : null
+    );
 
     // ── Markdown filter helpers ────────────────────────────────────────────
     function isMarkdownLike(path: string): boolean {
@@ -194,42 +207,23 @@
         }
     }
 
-    function getConfiguredBranchFallback(): string {
-        switch (activeProvider) {
-            case "github":
-                return plugin.settings.githubBranch || "";
-            case "gitlab":
-                return plugin.settings.gitlabBranch || "";
-            case "gitea":
-                return plugin.settings.giteaBranch || "";
-            default:
-                return currentBranch;
-        }
-    }
-
+    /**
+     * Fetch the current branch list from the active provider.
+     * State transitions (loading → ready/error) are published through
+     * SyncState and flow into the component via the subscription.
+     */
     async function refreshBranches(force = false): Promise<void> {
-        if (!branchSelectorReady || !plugin.syncManager) {
-            branchesList = [];
-            currentBranch = getConfiguredBranchFallback();
-            fetchBranchesError = null;
-            return;
-        }
-
-        fetchingBranches = true;
-        fetchBranchesError = null;
-        currentBranch = getConfiguredBranchFallback();
+        if (!plugin.syncManager) return;
         try {
-            const info = force
-                ? await plugin.syncManager.refreshBranchSelection()
-                : await plugin.syncManager.getBranchSelection();
-            branchesList = info.branches ?? [];
-            currentBranch = info.current ?? "";
+            if (force) {
+                await plugin.syncManager.refreshBranchSelection("manual");
+            } else {
+                await plugin.syncManager.ensureBranchSelectionFresh(
+                    "view-mounted"
+                );
+            }
         } catch (e) {
-            fetchBranchesError = e instanceof Error ? e.message : String(e);
-            branchesList = currentBranch ? [currentBranch] : [];
             plugin.log("Failed to refresh branch selector:", e);
-        } finally {
-            fetchingBranches = false;
         }
     }
 
@@ -249,8 +243,32 @@
                 if (branchJustSwitched && !s.isSyncing && !s.lastError) {
                     branchJustSwitched = false;
                 }
+                // Reactively update branch selector whenever the SyncState
+                // branchSelection changes (e.g. after init or branch switch).
+                // fetchingBranches / fetchBranchesError are derived from
+                // s.branchSelectionStatus so they update automatically.
+                if (s.branchSelection) {
+                    branchesList = s.branchSelection.branches ?? [];
+                    currentBranch = s.branchSelection.current ?? "";
+                }
             });
         }
+
+        // Read the current SyncState immediately on mount so the branch
+        // selector populates without waiting for the next subscriber tick,
+        // covering the case where the view is restored from a workspace
+        // layout after init() already completed.
+        if (plugin.syncState?.getState) {
+            const currentState = plugin.syncState.getState();
+            if (currentState.branchSelection) {
+                branchesList = currentState.branchSelection.branches ?? [];
+                currentBranch = currentState.branchSelection.current ?? "";
+            }
+        }
+        // Always ask the SyncManager to ensure freshness — it will skip the
+        // fetch if branch selection is already loaded and not stale. Safe to
+        // call unconditionally; no duplicate requests are made.
+        void plugin.syncManager?.ensureBranchSelectionFresh("view-mounted");
 
         view.registerEvent(
             view.app.workspace.on(
@@ -275,15 +293,15 @@
             commitAndSync()
         );
 
-        // Refresh branches when repository status or provider state is refreshed.
+        // Refresh branches when the SyncManager or provider signals readiness.
+        // Uses ensureBranchSelectionFresh to avoid duplicate fetches.
         view.registerEvent(
-            view.app.workspace.on(
-                "obsidian-git:refreshed",
-                () => void refreshBranches()
-            )
+            view.app.workspace.on("obsidian-git:refreshed", () => {
+                void plugin.syncManager?.ensureBranchSelectionFresh(
+                    "workspace-refreshed"
+                );
+            })
         );
-        // Populate branches for the active sync provider.
-        void refreshBranches();
         view.registerEvent(
             view.app.workspace.on("obsidian-git:sync-mode-changed", (mode) => {
                 syncMode = mode;
@@ -301,7 +319,9 @@
                     } else {
                         syncActiveProvider();
                     }
-                    void refreshBranches();
+                    void plugin.syncManager?.ensureBranchSelectionFresh(
+                        "provider-changed"
+                    );
                 }
             )
         );
@@ -382,8 +402,8 @@
             } finally {
                 checkoutInProgress = false;
                 loading = false;
-                void refreshBranches();
-                // Trigger a workspace refresh so git-mode consumers also update.
+                // Trigger a workspace refresh so git-mode consumers also update;
+                // the event handler calls ensureBranchSelectionFresh.
                 view.app.workspace.trigger("obsidian-git:refreshed");
                 refresh().catch(console.error);
             }

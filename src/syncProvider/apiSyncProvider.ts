@@ -1572,6 +1572,7 @@ export class ApiSyncProvider implements SyncProvider {
             vaultPath: string;
             content: string | Uint8Array;
         }> = [];
+        const pendingLocalDeletes: string[] = [];
         // filesChanged is computed at the end from totalChanges; no intermediate increments needed
         const strategy =
             this.plugin.settings.conflictResolutionStrategy ?? "manual";
@@ -1602,11 +1603,49 @@ export class ApiSyncProvider implements SyncProvider {
             remoteOnlyPaths.delete(remotePath);
             const remoteItem = remoteTree.get(remotePath);
             if (!remoteItem) {
-                mutations.push({
-                    kind: "create",
-                    path: remotePath,
-                    content: await this.maybeEncrypt(local.content),
-                });
+                const wasInManifest = syncManifest.has(remotePath);
+                if (!wasInManifest) {
+                    // New local file — push.
+                    mutations.push({
+                        kind: "create",
+                        path: remotePath,
+                        content: await this.maybeEncrypt(local.content),
+                    });
+                    continue;
+                }
+
+                // File was synced before but no longer exists remote —
+                // it was deleted from the remote side.
+                if (strategy === "always-local") {
+                    mutations.push({
+                        kind: "create",
+                        path: remotePath,
+                        content: await this.maybeEncrypt(local.content),
+                    });
+                } else if (strategy === "always-remote") {
+                    pendingLocalDeletes.push(local.vaultPath);
+                } else if (strategy === "last-write-wins") {
+                    const lastSync =
+                        this.plugin.syncState.getState().lastSyncTime;
+                    if (lastSync === null || local.mtime > lastSync) {
+                        mutations.push({
+                            kind: "create",
+                            path: remotePath,
+                            content: await this.maybeEncrypt(local.content),
+                        });
+                    } else {
+                        pendingLocalDeletes.push(local.vaultPath);
+                    }
+                } else {
+                    // manual — surface as conflict
+                    conflicts.push({
+                        path: local.vaultPath,
+                        localContent: local.content,
+                        isBinary: local.isBinary,
+                        deletedRemote: true,
+                        requiresManualResolution: true,
+                    });
+                }
                 continue;
             }
 
@@ -1711,7 +1750,23 @@ export class ApiSyncProvider implements SyncProvider {
             };
         }
 
-        const totalChanges = mutations.length + pendingLocalWrites.length;
+        const totalChanges =
+            mutations.length +
+            pendingLocalWrites.length +
+            pendingLocalDeletes.length;
+
+        for (const vaultPath of pendingLocalDeletes) {
+            const file = this.plugin.app.vault.getFileByPath(vaultPath);
+            if (file) {
+                await this.plugin.app.vault.delete(file);
+                await this.pruneEmptyParentFolders(vaultPath);
+            }
+            const remotePath = toRemoteScopedPath(
+                vaultPath,
+                this.trackedDirectory
+            );
+            localFiles.delete(remotePath);
+        }
 
         for (const pendingWrite of pendingLocalWrites) {
             await this.writeVaultFile(
@@ -1734,6 +1789,7 @@ export class ApiSyncProvider implements SyncProvider {
         this.audit("sync:complete", {
             mutationCount: mutations.length,
             downloadedCount: pendingLocalWrites.length,
+            deletedCount: pendingLocalDeletes.length,
             conflictCount: conflicts.length,
             totalChanges,
         });

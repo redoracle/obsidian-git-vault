@@ -1,4 +1,9 @@
-import type { SyncProviderType, FileChange, Conflict } from "./syncProvider";
+import type {
+    SyncProviderType,
+    FileChange,
+    Conflict,
+    SyncBranchSelection,
+} from "./syncProvider";
 import type { Status } from "../types";
 
 // ─── State shape ──────────────────────────────────────────────────────────────
@@ -36,6 +41,27 @@ export interface SyncState {
      * Managed via {@link SyncStateManager.updateCachedGitStatus}.
      */
     cachedGitStatus: Status | null;
+    /**
+     * Latest branch selection (current branch + available branches) for the
+     * active provider.  Updated by SyncManager after init and on branch switches.
+     * `null` = provider hasn't delivered its first branch selection yet.
+     */
+    branchSelection: SyncBranchSelection | null;
+    /**
+     * Granular lifecycle tracking for the branch selection fetch so the UI
+     * can distinguish "not yet loaded" from "loading" from "failed".
+     */
+    branchSelectionStatus: "idle" | "loading" | "ready" | "error";
+    /**
+     * Human-readable error message when branchSelectionStatus is "error".
+     * Cleared on the next successful load.
+     */
+    branchSelectionError: string | null;
+    /**
+     * Whether the sync provider has completed initialisation and is ready to
+     * serve branch/sync requests.  false = provider is null or still booting.
+     */
+    providerReady: boolean;
 }
 
 function deepFreeze<T>(value: T): Readonly<T> {
@@ -78,6 +104,10 @@ export class SyncStateManager {
         lastError: null,
         lastErrorCode: null,
         cachedGitStatus: null,
+        branchSelection: null,
+        branchSelectionStatus: "idle",
+        branchSelectionError: null,
+        providerReady: false,
     };
 
     private listeners: Array<(state: Readonly<SyncState>) => void> = [];
@@ -96,6 +126,12 @@ export class SyncStateManager {
             ]) as unknown as Conflict[],
             cachedGitStatus: this.state.cachedGitStatus
                 ? (deepFreeze({ ...this.state.cachedGitStatus }) as Status)
+                : null,
+            branchSelection: this.state.branchSelection
+                ? (deepFreeze({
+                      ...this.state.branchSelection,
+                      branches: [...this.state.branchSelection.branches],
+                  }) as unknown as SyncBranchSelection)
                 : null,
         });
     }
@@ -182,6 +218,61 @@ export class SyncStateManager {
 
     clearPendingChanges(): void {
         this.update({ pendingChanges: [] });
+    }
+
+    // ── Branch selection ───────────────────────────────────────────────────
+
+    /**
+     * Store the latest branch selection from the active provider.
+     * Pass `null` to invalidate (e.g. during provider teardown).
+     * Sets status to "ready" when a selection is provided, "idle" when null.
+     */
+    setBranchSelection(selection: SyncBranchSelection | null): void {
+        this.update({
+            branchSelection: selection,
+            branchSelectionStatus: selection ? "ready" : "idle",
+            branchSelectionError: null,
+        });
+    }
+
+    /**
+     * Mark branch selection as in-flight so the UI can show a loading
+     * indicator without waiting for the next provider round-trip.
+     */
+    setBranchSelectionLoading(): void {
+        this.update({
+            branchSelectionStatus: "loading",
+            branchSelectionError: null,
+        });
+    }
+
+    /**
+     * Store a successful branch selection result in one atomic update.
+     */
+    setBranchSelectionReady(selection: SyncBranchSelection): void {
+        this.update({
+            branchSelection: selection,
+            branchSelectionStatus: "ready",
+            branchSelectionError: null,
+        });
+    }
+
+    /**
+     * Record a branch selection fetch failure so the UI can surface a
+     * recoverable error instead of silently rendering an empty list.
+     */
+    setBranchSelectionError(error: string): void {
+        this.update({
+            branchSelectionStatus: "error",
+            branchSelectionError: error,
+        });
+    }
+
+    /**
+     * Mark the provider as ready (or not) for UI consumers.
+     */
+    setProviderReady(ready: boolean): void {
+        this.update({ providerReady: ready });
     }
 
     // ── Cached git status ─────────────────────────────────────────────────

@@ -106,19 +106,19 @@ These cases should be tested, when changes to this feature have been made.
 
   - There was a bug with the old super-project identifier. It did not fully work with submodules as the following scenario lead to a different displayed line authoring, than the true one.
 
-            1. remember the lineAuthoringId A for a file in a submodule in the vault.
+                1. remember the lineAuthoringId A for a file in a submodule in the vault.
 
-                - it uses the HEAD of the git super-project rather than of the submodule the file is contained in.
+                    - it uses the HEAD of the git super-project rather than of the submodule the file is contained in.
 
-            2. add a few lines in the file. The plugin will correctly detect the changed file-contents
-               hash, which will trigger re-computation and re-render.
-            3. commit the changes in the submodule - without making a corresponding commit in the super-project.
-            4. Close the file and re-open it in Obsidian.
+                2. add a few lines in the file. The plugin will correctly detect the changed file-contents
+                   hash, which will trigger re-computation and re-render.
+                3. commit the changes in the submodule - without making a corresponding commit in the super-project.
+                4. Close the file and re-open it in Obsidian.
 
-                - In the submodule, the HEAD has changed - but not in the super-project.
-                - Since the file path and file contents are same after committing, they haven't changed.
-                - The current cache key doesn't detect this change and hence the view isn't updated.
-                - Reloading Obsidian entirely will evict the cache - and the line authoring will be shown correctly again.
+                    - In the submodule, the HEAD has changed - but not in the super-project.
+                    - Since the file path and file contents are same after committing, they haven't changed.
+                    - The current cache key doesn't detect this change and hence the view isn't updated.
+                    - Reloading Obsidian entirely will evict the cache - and the line authoring will be shown correctly again.
 
 ### Unsaved Changes Gutter Update Scenario
 

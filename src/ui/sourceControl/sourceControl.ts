@@ -52,6 +52,15 @@ export default class GitView extends ItemView implements HoverParent {
 
     onOpen(): Promise<void> {
         this.reload();
+        // Let the SyncManager decide whether the cached branch selection is
+        // missing, in error, or stale — instead of blindly refreshing every
+        // time the view opens.
+        this.plugin.syncManager
+            ?.ensureBranchSelectionFresh("view-open")
+            .catch(() => {
+                // Best-effort; the Svelte component will observe the error
+                // via its SyncState subscription and surface a retry path.
+            });
         return super.onOpen();
     }
 }

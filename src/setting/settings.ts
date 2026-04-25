@@ -6,6 +6,7 @@ import type {
 } from "obsidian";
 import {
     debounce,
+    Platform,
     PluginSettingTab,
     Setting,
     TextAreaComponent,
@@ -17,6 +18,7 @@ import { ConflictHistoryModal } from "src/syncProvider/conflictHistory";
 import type { ObsidianGitSettings } from "src/types";
 import { splitRemoteBranch } from "src/utils";
 import { SettingsPersistenceService } from "./controller/settingsPersistenceService";
+import { TargetChangeController } from "./controller/targetChangeController";
 import { RepoBindingService } from "./policy/repoBindingService";
 import { ProviderBootstrapPolicy } from "./policy/providerBootstrapPolicy";
 import { ApiRemoteTargetWorkflow } from "./policy/apiRemoteTargetWorkflow";
@@ -54,6 +56,20 @@ import type {
 // importing or depending on a large external type package.
 interface GitHubUser {
     login?: string;
+}
+
+type SubmoduleCapableGitManager = {
+    addSubmodule(url: string, submodulePath: string): Promise<void>;
+};
+
+function isSubmoduleCapableGitManager(
+    value: unknown
+): value is SubmoduleCapableGitManager {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    const candidate = value as { addSubmodule?: unknown };
+    return typeof candidate.addSubmodule === "function";
 }
 
 export class ObsidianGitSettingsTab extends PluginSettingTab {
@@ -850,9 +866,204 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
             reloadSyncManager: () => this.reloadSyncManager(),
             scheduleApiRemoteTargetPrompt: () =>
                 this.scheduleApiRemoteTargetPrompt(),
+            runApiRemoteTargetWorkflow: () => this.runApiRemoteTargetWorkflow(),
             setDropdownOptions: (dd, options, selected) =>
                 this.setDropdownOptions(dd, options, selected),
+            isVaultLinked: !!this.plugin.settings.lastSyncedRepoFingerprint,
+            confirmTargetChange: (repo: string, branch: string) =>
+                this.confirmTargetChange(provider, repo, branch),
         };
+    }
+
+    private getProviderRepo(provider: "github" | "gitlab" | "gitea"): string {
+        switch (provider) {
+            case "github":
+                return this.plugin.settings.githubRepo ?? "";
+            case "gitlab":
+                return this.plugin.settings.gitlabProjectId ?? "";
+            case "gitea":
+                return this.plugin.settings.giteaRepo ?? "";
+            default:
+                throw new Error(`Unrecognized provider: ${String(provider)}`);
+        }
+    }
+
+    private getProviderBranch(provider: "github" | "gitlab" | "gitea"): string {
+        switch (provider) {
+            case "github":
+                return this.plugin.settings.githubBranch ?? "";
+            case "gitlab":
+                return this.plugin.settings.gitlabBranch ?? "";
+            case "gitea":
+                return this.plugin.settings.giteaBranch ?? "";
+            default:
+                throw new Error(`Unrecognized provider: ${String(provider)}`);
+        }
+    }
+
+    private buildCloneUrl(
+        provider: "github" | "gitlab" | "gitea",
+        repo: string
+    ): string | null {
+        switch (provider) {
+            case "github": {
+                const owner = this.plugin.settings.githubOwner;
+                if (!owner || !repo) return null;
+                return `https://github.com/${owner}/${repo}.git`;
+            }
+            case "gitlab": {
+                const projectId = repo || this.plugin.settings.gitlabProjectId;
+                if (!projectId) return null;
+                const baseUrl = (
+                    this.plugin.settings.gitlabBaseUrl ||
+                    "https://gitlab.com/api/v4"
+                )
+                    .replace(/\/api\/v4\/?$/, "")
+                    .replace(/\/+$/, "");
+                return `${baseUrl}/${projectId}.git`;
+            }
+            case "gitea": {
+                const owner = this.plugin.settings.giteaOwner;
+                const baseUrl = this.plugin.settings.giteaBaseUrl?.replace(
+                    /\/+$/,
+                    ""
+                );
+                if (!baseUrl || !owner || !repo) return null;
+                return `${baseUrl}/${owner}/${repo}.git`;
+            }
+            default:
+                return null;
+        }
+    }
+
+    private async confirmTargetChange(
+        provider: "github" | "gitlab" | "gitea",
+        proposedRepo: string,
+        proposedBranch: string
+    ): Promise<boolean> {
+        const controller = new TargetChangeController(
+            this.plugin.syncState,
+            Platform.isMobileApp
+        );
+        controller.setLastSyncedFingerprint(
+            this.plugin.settings.lastSyncedRepoFingerprint
+        );
+
+        const currentRepo = this.getProviderRepo(provider);
+        const currentBranch = this.getProviderBranch(provider);
+
+        const detection = controller.detectChange(
+            provider,
+            proposedRepo,
+            proposedBranch,
+            currentRepo,
+            currentBranch
+        );
+
+        if (!detection.repoChanged && !detection.branchChanged) {
+            return true;
+        }
+
+        const validation = controller.validateTransition(detection);
+
+        if (!validation.canProceed) {
+            for (const blocker of validation.blockers) {
+                this.plugin.showNotice(blocker, 6000);
+            }
+            return false;
+        }
+
+        if (!validation.requiresConfirmation) {
+            return true;
+        }
+
+        // Show the target change confirmation modal
+        try {
+            const { TargetChangeModal } = await import(
+                "../ui/modals/targetChangeModal"
+            );
+            const availableActions = controller.availableActions(validation);
+            const action = await new TargetChangeModal(
+                this.app,
+                detection,
+                validation,
+                availableActions
+            ).openAndGetResult();
+
+            if (action === "switch-vault") {
+                return true;
+            }
+
+            if (action === "clone-dedicated-vault") {
+                const url = this.buildCloneUrl(provider, proposedRepo);
+                if (url) {
+                    this.plugin.showNotice(
+                        `Opening clone dialog for ${url}...`,
+                        4000
+                    );
+                    this.plugin.triggerDedicatedVaultClone(url);
+                } else {
+                    this.plugin.showNotice(
+                        "Could not determine remote URL for the selected repository.",
+                        5000
+                    );
+                }
+                return false;
+            }
+
+            if (action === "create-submodule") {
+                const url = this.buildCloneUrl(provider, proposedRepo);
+                if (!url) {
+                    this.plugin.showNotice(
+                        "Could not determine remote URL for the selected repository.",
+                        5000
+                    );
+                    return false;
+                }
+
+                const maybeGitManager: unknown = this.plugin.gitManager;
+                if (!isSubmoduleCapableGitManager(maybeGitManager)) {
+                    this.plugin.showNotice(
+                        "Git submodules require git mode. Switch to the git sync provider on desktop to add submodules.",
+                        6000
+                    );
+                    return false;
+                }
+
+                const { SubmodulePathModal } = await import(
+                    "../ui/modals/submodulePathModal"
+                );
+                const submodulePath = await new SubmodulePathModal(
+                    this.app,
+                    proposedRepo
+                ).openAndGetResult();
+                if (!submodulePath) return false;
+
+                try {
+                    await maybeGitManager.addSubmodule(url, submodulePath);
+                    this.plugin.showNotice(
+                        `Submodule "${proposedRepo}" added at "${submodulePath}". Use source control to commit.`,
+                        6000
+                    );
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    this.plugin.showNotice(
+                        `Failed to add submodule: ${message}`,
+                        7000
+                    );
+                }
+                return false;
+            }
+
+            return false;
+        } catch (error) {
+            console.error(
+                "[ObsidianGit] Failed to load or open TargetChangeModal:",
+                error
+            );
+            return false;
+        }
     }
 
     private scheduleApiRemoteTargetPrompt(): void {
