@@ -66,7 +66,7 @@ export interface SyncState {
 
 function deepFreeze<T>(value: T): Readonly<T> {
     if (value === null || typeof value !== "object") {
-        return value as Readonly<T>;
+        return value;
     }
 
     if (!Object.isFrozen(value)) {
@@ -78,7 +78,7 @@ function deepFreeze<T>(value: T): Readonly<T> {
         }
     }
 
-    return value as Readonly<T>;
+    return value;
 }
 
 // ─── State manager ────────────────────────────────────────────────────────────
