@@ -74,7 +74,7 @@ export function renderGitLabProviderSection({
             ? draftProjectId
             : normalizeGitLabProjectId(settings.gitlabProjectId ?? "");
     const effectiveBranch = (): string =>
-        draftBranch !== null ? draftBranch : settings.gitlabBranch ?? "";
+        draftBranch !== null ? draftBranch : (settings.gitlabBranch ?? "");
 
     const revertDraft = (): void => {
         draftProjectId = null;
@@ -534,8 +534,8 @@ export function renderGitLabProviderSection({
                         newProjectNameInput = t;
                         t.setPlaceholder(
                             settings.gitlabProjectId
-                                ? settings.gitlabProjectId.split("/").pop() ??
-                                      "my-vault"
+                                ? (settings.gitlabProjectId.split("/").pop() ??
+                                      "my-vault")
                                 : "my-vault"
                         );
                     });

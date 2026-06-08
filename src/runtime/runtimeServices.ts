@@ -34,8 +34,7 @@ export interface IMessageHost {
 }
 
 export interface IConflictCoordinatorHost
-    extends IPluginStateHost,
-        IMessageHost {
+    extends IPluginStateHost, IMessageHost {
     app: App;
     tools: Tools;
     localStorage: LocalStorageSettings;
@@ -48,9 +47,7 @@ export interface IConflictCoordinator {
 }
 
 export interface IBranchRemoteHost
-    extends IPluginStateHost,
-        IMessageHost,
-        IWorkspaceRefreshHost {
+    extends IPluginStateHost, IMessageHost, IWorkspaceRefreshHost {
     app: App;
     settings: ObsidianGitSettings;
     gitManager: GitManager;
@@ -73,9 +70,7 @@ export interface IBranchRemoteService {
 }
 
 export interface IGitOperationsHost
-    extends IPluginStateHost,
-        IMessageHost,
-        IWorkspaceRefreshHost {
+    extends IPluginStateHost, IMessageHost, IWorkspaceRefreshHost {
     app: App;
     settings: ObsidianGitSettings;
     gitManager: GitManager;

@@ -104,7 +104,7 @@ export class GitOperationsService implements IGitOperationsService {
         const cloneOptions: ICloneRepoOptions =
             typeof options === "string"
                 ? { remoteUrl: options }
-                : options ?? {};
+                : (options ?? {});
         const modalHost: GeneralModalHost = { app: this.host.app };
         const gitManager = this.host.gitManager;
         if (gitManager == null) {

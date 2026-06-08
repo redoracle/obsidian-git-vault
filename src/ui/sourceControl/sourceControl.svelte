@@ -110,7 +110,7 @@
     );
     const fetchBranchesError = $derived(
         syncState.branchSelectionStatus === "error"
-            ? syncState.branchSelectionError ?? "Failed to load branches"
+            ? (syncState.branchSelectionError ?? "Failed to load branches")
             : null
     );
 

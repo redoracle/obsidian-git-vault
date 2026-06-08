@@ -339,8 +339,8 @@ export default class ObsidianGit extends Plugin {
             case "github":
                 return Boolean(
                     this.settings.githubOwner &&
-                        this.settings.githubRepo &&
-                        this.settings.githubBranch
+                    this.settings.githubRepo &&
+                    this.settings.githubBranch
                 );
             case "gitlab":
                 // Reject purely-numeric GitLab project IDs here because the
@@ -351,15 +351,15 @@ export default class ObsidianGit extends Plugin {
                 // URL, so require a non-numeric project identifier.
                 return Boolean(
                     this.settings.gitlabProjectId &&
-                        !/^\d+$/.test(this.settings.gitlabProjectId.trim()) &&
-                        this.settings.gitlabBranch
+                    !/^\d+$/.test(this.settings.gitlabProjectId.trim()) &&
+                    this.settings.gitlabBranch
                 );
             case "gitea":
                 return Boolean(
                     this.settings.giteaBaseUrl &&
-                        this.settings.giteaOwner &&
-                        this.settings.giteaRepo &&
-                        this.settings.giteaBranch
+                    this.settings.giteaOwner &&
+                    this.settings.giteaRepo &&
+                    this.settings.giteaBranch
                 );
             case "git":
                 return false;
@@ -1144,7 +1144,7 @@ export default class ObsidianGit extends Plugin {
         const cloneOptions: ICloneRepoOptions =
             typeof options === "string"
                 ? { remoteUrl: options }
-                : options ?? {};
+                : (options ?? {});
         if (cloneOptions.target === "dedicated-vault") {
             return this.cloneGitRepoAsDedicatedVault(cloneOptions.remoteUrl);
         }

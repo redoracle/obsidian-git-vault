@@ -985,12 +985,12 @@ export class SimpleGit extends GitManager {
                         this.plugin.log(
                             `flattenBranch: failed to restore branch '${current}' from orphan temp '${tempBranch}': ${
                                 recoveryError instanceof Error
-                                    ? recoveryError.stack ??
-                                      recoveryError.message
+                                    ? (recoveryError.stack ??
+                                      recoveryError.message)
                                     : String(recoveryError)
                             }; original error: ${
                                 error instanceof Error
-                                    ? error.stack ?? error.message
+                                    ? (error.stack ?? error.message)
                                     : String(error)
                             }`
                         );
@@ -999,7 +999,7 @@ export class SimpleGit extends GitManager {
                         console.error(
                             "flattenBranch: failed to log recovery error (checkout):",
                             logError instanceof Error
-                                ? logError.stack ?? logError.message
+                                ? (logError.stack ?? logError.message)
                                 : String(logError)
                         );
                     }
@@ -1046,11 +1046,11 @@ export class SimpleGit extends GitManager {
                 this.plugin.log(
                     `flattenBranch: failed to delete temp branch '${tempBranch}' during cleanup after error: ${
                         deleteError instanceof Error
-                            ? deleteError.stack ?? deleteError.message
+                            ? (deleteError.stack ?? deleteError.message)
                             : String(deleteError)
                     }; original error: ${
                         originalError instanceof Error
-                            ? originalError.stack ?? originalError.message
+                            ? (originalError.stack ?? originalError.message)
                             : String(originalError)
                     }; current: ${current}`
                 );
@@ -1058,7 +1058,7 @@ export class SimpleGit extends GitManager {
                 console.error(
                     "flattenBranch: failed to log temp-branch cleanup failure:",
                     logError instanceof Error
-                        ? logError.stack ?? logError.message
+                        ? (logError.stack ?? logError.message)
                         : String(logError)
                 );
             }
@@ -1081,7 +1081,7 @@ export class SimpleGit extends GitManager {
                     console.error(
                         "flattenBranch: failed to log missing temp branch during cleanup:",
                         logError instanceof Error
-                            ? logError.stack ?? logError.message
+                            ? (logError.stack ?? logError.message)
                             : String(logError)
                     );
                 }
@@ -1445,7 +1445,7 @@ export class SimpleGit extends GitManager {
                 if (command.error) {
                     console.error(
                         command.error instanceof Error
-                            ? command.error.stack ?? command.error.message
+                            ? (command.error.stack ?? command.error.message)
                             : String(command.error)
                     );
                     return false;
@@ -1455,7 +1455,7 @@ export class SimpleGit extends GitManager {
             } else {
                 console.error(
                     command.error instanceof Error
-                        ? command.error.stack ?? command.error.message
+                        ? (command.error.stack ?? command.error.message)
                         : String(command.error)
                 );
                 return false;

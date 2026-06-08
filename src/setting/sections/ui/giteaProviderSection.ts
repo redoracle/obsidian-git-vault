@@ -47,9 +47,9 @@ export function renderGiteaProviderSection({
         (draftBranch !== null && draftBranch !== (settings.giteaBranch ?? ""));
 
     const effectiveRepo = (): string =>
-        draftRepo !== null ? draftRepo : settings.giteaRepo ?? "";
+        draftRepo !== null ? draftRepo : (settings.giteaRepo ?? "");
     const effectiveBranch = (): string =>
-        draftBranch !== null ? draftBranch : settings.giteaBranch ?? "";
+        draftBranch !== null ? draftBranch : (settings.giteaBranch ?? "");
 
     const revertDraft = (): void => {
         draftRepo = null;

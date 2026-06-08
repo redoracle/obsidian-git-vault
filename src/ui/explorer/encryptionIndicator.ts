@@ -143,8 +143,8 @@ export function registerExplorerEncryptionIndicator(plugin: ObsidianGit) {
 
             const supportsRemoteCheck = Boolean(
                 plugin.syncManager &&
-                    (capabilities.supportsPerFileMetadata ||
-                        capabilities.supportsEncryptedSync)
+                (capabilities.supportsPerFileMetadata ||
+                    capabilities.supportsEncryptedSync)
             );
 
             if (!supportsRemoteCheck) {

@@ -348,9 +348,9 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
         const remoteName = trackingRemote ?? remotes[0] ?? "origin";
         const remoteUrl =
             plugin.gitReady && remoteName
-                ? (await plugin.gitManager
+                ? ((await plugin.gitManager
                       .getRemoteUrl(remoteName)
-                      .catch(() => undefined)) ?? ""
+                      .catch(() => undefined)) ?? "")
                 : "";
 
         return {
@@ -979,9 +979,8 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
 
         // Show the target change confirmation modal
         try {
-            const { TargetChangeModal } = await import(
-                "../ui/modals/targetChangeModal"
-            );
+            const { TargetChangeModal } =
+                await import("../ui/modals/targetChangeModal");
             const availableActions = controller.availableActions(validation);
             const action = await new TargetChangeModal(
                 this.app,
@@ -1030,9 +1029,8 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                     return false;
                 }
 
-                const { SubmodulePathModal } = await import(
-                    "../ui/modals/submodulePathModal"
-                );
+                const { SubmodulePathModal } =
+                    await import("../ui/modals/submodulePathModal");
                 const submodulePath = await new SubmodulePathModal(
                     this.app,
                     proposedRepo
