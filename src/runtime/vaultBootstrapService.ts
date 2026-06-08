@@ -337,8 +337,10 @@ export class VaultBootstrapService {
         baseSettings.lastSyncedRepoFingerprint =
             activeProvider === "git"
                 ? this.plugin.settings.lastSyncedRepoFingerprint
-                : getApiRepoFingerprint(this.plugin.settings, activeProvider) ??
-                  "";
+                : (getApiRepoFingerprint(
+                      this.plugin.settings,
+                      activeProvider
+                  ) ?? "");
 
         baseSettings.githubToken = "";
         baseSettings.apiEncryptionPassphraseFingerprint = "";

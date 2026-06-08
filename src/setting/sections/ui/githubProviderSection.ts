@@ -44,9 +44,9 @@ export function renderGitHubProviderSection({
         (draftBranch !== null && draftBranch !== (settings.githubBranch ?? ""));
 
     const effectiveRepo = (): string =>
-        draftRepo !== null ? draftRepo : settings.githubRepo ?? "";
+        draftRepo !== null ? draftRepo : (settings.githubRepo ?? "");
     const effectiveBranch = (): string =>
-        draftBranch !== null ? draftBranch : settings.githubBranch ?? "";
+        draftBranch !== null ? draftBranch : (settings.githubBranch ?? "");
 
     const revertDraft = (): void => {
         draftRepo = null;

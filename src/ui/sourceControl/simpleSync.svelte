@@ -57,7 +57,7 @@
                 ? "GitLab"
                 : state.provider === "gitea"
                   ? "Gitea"
-                  : state.provider ?? "Unknown";
+                  : (state.provider ?? "Unknown");
 
     $: statusLabel = (() => {
         if (state.isSyncing) return "Syncing your notes…";

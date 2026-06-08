@@ -40,8 +40,7 @@ export interface HistorySectionContext extends BaseSettingsSectionContext {
     refreshPlugin: () => Promise<void>;
 }
 
-export interface SourceControlSectionContext
-    extends BaseSettingsSectionContext {
+export interface SourceControlSectionContext extends BaseSettingsSectionContext {
     setNonDefaultValue: SetNonDefaultValue;
     updateRefreshDebouncer: (this: void) => void;
 }

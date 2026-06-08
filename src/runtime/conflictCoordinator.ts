@@ -31,7 +31,7 @@ export class ConflictCoordinator implements IConflictCoordinator {
             await this.host.app.vault.delete(file);
         } catch (error) {
             this.host.log(
-                `Failed to delete conflict file ${CONFLICT_OUTPUT_FILE}: ${error instanceof Error ? error.stack ?? error.message : String(error)}`
+                `Failed to delete conflict file ${CONFLICT_OUTPUT_FILE}: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`
             );
             throw error;
         }
