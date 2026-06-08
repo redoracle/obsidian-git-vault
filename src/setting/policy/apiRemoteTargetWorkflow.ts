@@ -227,8 +227,8 @@ export class ApiRemoteTargetWorkflow {
         decision: RemoteTargetDecision
     ): ApiRemoteActionOption[] {
         switch (decision.kind) {
-            case "new-target":
-                return [
+            case "new-target": {
+                const options: ApiRemoteActionOption[] = [
                     {
                         action: "upload-current-vault",
                         label: "Upload this vault to remote",
@@ -243,18 +243,22 @@ export class ApiRemoteTargetWorkflow {
                             "Pull the selected remote into the vault that is currently open. Use this when the remote already has content you want to download.",
                     },
                     {
-                        action: "import-dedicated-vault",
-                        label: "Clone as dedicated vault",
-                        description:
-                            "Download the selected remote into a separate folder so it can be opened as its own Obsidian vault.",
-                    },
-                    {
                         action: "cancel",
                         label: "Cancel",
                         description:
                             "Keep the selected target in settings but do nothing for now.",
                     },
                 ];
+                if (PlatformGuard.isDesktop()) {
+                    options.splice(2, 0, {
+                        action: "import-dedicated-vault",
+                        label: "Clone as dedicated vault",
+                        description:
+                            "Download the selected remote into a separate folder so it can be opened as its own Obsidian vault.",
+                    });
+                }
+                return options;
+            }
             case "current-vault-linked":
                 return [
                     {

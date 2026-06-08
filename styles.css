@@ -1089,6 +1089,20 @@ body {
     margin: 0 0 var(--size-4-4);
 }
 
+.git-vault-target-change-modal__change-label {
+    font-weight: var(--font-semibold);
+    color: var(--text-normal);
+}
+
+.git-vault-target-change-modal__warning,
+.git-vault-target-change-modal__blocker {
+    margin: 0 0 var(--size-4-3);
+}
+
+.git-vault-target-change-modal__blocker {
+    color: var(--text-error);
+}
+
 .git-vault-remote-action-modal__actions {
     display: flex;
     flex-direction: column;

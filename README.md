@@ -18,12 +18,12 @@ Obsidian Git Vault adds reliable, versioned syncing to your Obsidian vault. On d
 
 ## Why Obsidian Git Vault
 
-| Problem | What this plugin does |
-| --- | --- |
-| Git is complex for everyday sync | Simple Mode gives one-click sync with no Git terminology |
-| Mobile devices typically lack a Git CLI | API Sync Mode works without installing Git |
-| Conflicts are hard to resolve | Visual conflict resolver with side-by-side diffs |
-| Sync is easy to forget | Smart triggers run sync on file change, idle, close, or reconnect |
+| Problem                                 | What this plugin does                                             |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| Git is complex for everyday sync        | Simple Mode gives one-click sync with no Git terminology          |
+| Mobile devices typically lack a Git CLI | API Sync Mode works without installing Git                        |
+| Conflicts are hard to resolve           | Visual conflict resolver with side-by-side diffs                  |
+| Sync is easy to forget                  | Smart triggers run sync on file change, idle, close, or reconnect |
 
 ---
 
@@ -161,17 +161,17 @@ Authoritative capability declarations live in `src/syncProvider/providerRegistry
 
 ### Feature matrix
 
-| Capability | Git | GitHub API | GitLab API | Gitea API |
-| --- | --- | --- | --- | --- |
-| Manual per-file Encrypt / Decrypt | Supported | Supported | Supported | Supported |
-| Encrypted API sync file-content storage | Not applicable | Supported | Supported | Supported |
-| Tracked directory and excluded paths | Not supported | Supported | Supported | Supported |
-| Per-file sync metadata | Supported | Supported | Supported | Supported |
-| Remote file URL in metadata view | Not supported | Supported | Supported (namespace path) | Supported |
-| Atomic multi-file remote write | Supported via Git commit | Supported | Supported | Not supported |
-| Dedicated vault import on desktop | Not supported | Supported | Supported | Supported |
-| Auto-detect default branch | Not applicable | Supported | Supported | Supported |
-| History view in the app | Supported | Not supported | Not supported | Not supported |
+| Capability                              | Git                      | GitHub API    | GitLab API                 | Gitea API     |
+| --------------------------------------- | ------------------------ | ------------- | -------------------------- | ------------- |
+| Manual per-file Encrypt / Decrypt       | Supported                | Supported     | Supported                  | Supported     |
+| Encrypted API sync file-content storage | Not applicable           | Supported     | Supported                  | Supported     |
+| Tracked directory and excluded paths    | Not supported            | Supported     | Supported                  | Supported     |
+| Per-file sync metadata                  | Supported                | Supported     | Supported                  | Supported     |
+| Remote file URL in metadata view        | Not supported            | Supported     | Supported (namespace path) | Supported     |
+| Atomic multi-file remote write          | Supported via Git commit | Supported     | Supported                  | Not supported |
+| Dedicated vault import on desktop       | Not supported            | Supported     | Supported                  | Supported     |
+| Auto-detect default branch              | Not applicable           | Supported     | Supported                  | Supported     |
+| History view in the app                 | Supported                | Not supported | Not supported              | Not supported |
 
 ---
 
@@ -191,16 +191,16 @@ Both modes use the same sync engine and settings and can be switched at any time
 
 ## Cross-platform support
 
-| Feature | Desktop | Mobile |
-| --- | --- | --- |
-| Git CLI (via `simple-git`) | ✅ | ❌ |
-| Isomorphic-Git fallback | ✅ | ✅ |
-| API sync backends | ✅ | ✅ (default) |
-| Source Control View | ✅ | ✅ |
-| Simple Mode | ✅ | ✅ (default) |
-| Advanced Mode | ✅ | ✅ |
-| Editor signs | ✅ | ❌ |
-| Submodule support | ✅ | ❌ |
+| Feature                    | Desktop | Mobile       |
+| -------------------------- | ------- | ------------ |
+| Git CLI (via `simple-git`) | ✅      | ❌           |
+| Isomorphic-Git fallback    | ✅      | ✅           |
+| API sync backends          | ✅      | ✅ (default) |
+| Source Control View        | ✅      | ✅           |
+| Simple Mode                | ✅      | ✅ (default) |
+| Advanced Mode              | ✅      | ✅           |
+| Editor signs               | ✅      | ❌           |
+| Submodule support          | ✅      | ❌           |
 
 Mobile defaults to an API backend and Simple Mode, but both can be changed in Settings.
 
@@ -292,36 +292,38 @@ Mobile defaults to an API backend and Simple Mode, but both can be changed in Se
    Git Remote          GitHub REST API
 ```
 
-**Key modules**
+## Key modules
 
-| Module | Role |
-| --- | --- |
-| `SyncProvider` | Interface that decouples UI from sync implementations |
-| `GitSyncProvider` | Adapter over `GitManager` (simple-git / isomorphic-git) |
-| `GitHubApiSyncProvider` | REST API engine with no binary dependency |
-| `SyncStateManager` | Centralized reactive state tracking |
-| `SyncManager` | Provider selection, smart triggers, and conflict routing |
-| `ConflictModal` | Visual resolver with per-file resolution tracking |
+Key modules are organized around a `SyncProvider` interface that abstracts the sync engine from the UI and allows multiple backends to share the same core logic. The `SyncManager` handles provider selection, smart triggers, and conflict routing. The `SyncStateManager` tracks sync status and metadata in a reactive store. The `ConflictModal` provides a visual interface for resolving conflicts.
+
+| Module                  | Role                                                     |
+| ----------------------- | -------------------------------------------------------- |
+| `SyncProvider`          | Interface that decouples UI from sync implementations    |
+| `GitSyncProvider`       | Adapter over `GitManager` (simple-git / isomorphic-git)  |
+| `GitHubApiSyncProvider` | REST API engine with no binary dependency                |
+| `SyncStateManager`      | Centralized reactive state tracking                      |
+| `SyncManager`           | Provider selection, smart triggers, and conflict routing |
+| `ConflictModal`         | Visual resolver with per-file resolution tracking        |
 
 ---
 
 ## Roadmap
 
-| Status | Item |
-| --- | --- |
-| ✅ | Git mode with full CLI and isomorphic-git fallback |
-| ✅ | Gitless mode via provider APIs |
-| ✅ | Simple Mode UI |
-| ✅ | Advanced Mode UI |
-| ✅ | Visual conflict resolver |
-| ✅ | Smart sync triggers |
-| ✅ | Mobile-first defaults |
-| ✅ | GitLab API backend |
-| ✅ | Gitea / self-hosted backend |
-| ✅ | Conflict resolution history log |
-| ✅ | Tracked directory and exclude-path support |
-| ✅ | Encrypted API sync |
-| ✅ | Per-file sync metadata sidebar |
+| Status | Item                                               |
+| ------ | -------------------------------------------------- |
+| ✅     | Git mode with full CLI and isomorphic-git fallback |
+| ✅     | Gitless mode via provider APIs                     |
+| ✅     | Simple Mode UI                                     |
+| ✅     | Advanced Mode UI                                   |
+| ✅     | Visual conflict resolver                           |
+| ✅     | Smart sync triggers                                |
+| ✅     | Mobile-first defaults                              |
+| ✅     | GitLab API backend                                 |
+| ✅     | Gitea / self-hosted backend                        |
+| ✅     | Conflict resolution history log                    |
+| ✅     | Tracked directory and exclude-path support         |
+| ✅     | Encrypted API sync                                 |
+| ✅     | Per-file sync metadata sidebar                     |
 
 ---
 

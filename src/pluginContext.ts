@@ -2,6 +2,8 @@ import type { App } from "obsidian";
 import type { INoticeHandle } from "src/notification/noticePresenter";
 import type { ObsidianGitSettings, SyncProviderSetting } from "src/types";
 import type { ISyncManifestStore } from "src/syncProvider/syncManifestStore";
+import type { SyncStateManager } from "src/syncProvider/syncState";
+import type { SyncBranchSelection } from "src/syncProvider/syncProvider";
 
 // ── Sub-interfaces ────────────────────────────────────────────────────────────
 //
@@ -14,6 +16,9 @@ export interface ISyncManagerContext {
     reload(): Promise<void>;
     syncNow(): Promise<void>;
     pullNow(): Promise<void>;
+    getBranchSelection(): Promise<SyncBranchSelection>;
+    refreshBranchSelection(): Promise<SyncBranchSelection>;
+    switchBranch(branch: string): Promise<boolean>;
 }
 
 /** Minimum secret-storage surface needed by settings and service modules. */
@@ -73,6 +78,10 @@ export interface IPluginContext {
     readonly useSimpleGit: boolean;
     /** True while the plugin considers Git initialized and ready for UI actions. */
     gitReady: boolean;
+    /** The active git manager instance (simple-git or isomorphic-git). */
+    gitManager?: import("./gitManager/gitManager").GitManager | null;
+    /** Centralised reactive state manager for sync lifecycle events. */
+    syncState: SyncStateManager;
     /**
      * Active sync manager. May be absent (`undefined`) or explicitly cleared
      * to `null` during early startup before the first `init()` completes.
@@ -91,4 +100,6 @@ export interface IPluginContext {
     refresh(): Promise<void>;
     /** Shows a dismissible notice and returns a handle for manual cleanup. */
     showNotice(message: string, timeout?: number): INoticeHandle;
+    /** Trigger the dedicated-vault clone flow for a given repository URL. */
+    triggerDedicatedVaultClone(remoteUrl: string): void;
 }

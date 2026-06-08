@@ -68,7 +68,7 @@ function addConfigurableLineAuthorSettings(
 
     if (key === "showCommitHash") {
         title = "Show commit hash";
-        actionNewValue = <LineAuthorSettings["showCommitHash"]>currentValue;
+        actionNewValue = currentValue;
     } else if (key === "authorDisplay") {
         const showOption = settings.lastShownAuthorDisplay ?? defaultValue;
         title = "Show author " + (currentlyShown ? currentValue : showOption);
@@ -104,7 +104,7 @@ export function enrichCommitInfoForContextMenu(
 ) {
     elt.setAttr(
         COMMIT_ATTR,
-        JSON.stringify(<CtxMenuCommitInfo>{
+        JSON.stringify({
             hash: commit.hash,
             isZeroCommit: commit.isZeroCommit,
             isWaitingGutter,

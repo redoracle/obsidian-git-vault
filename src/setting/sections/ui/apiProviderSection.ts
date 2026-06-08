@@ -288,7 +288,11 @@ export function renderApiProviderSection({
                             .setButtonText("Choose action")
                             .setCta()
                             .onClick(async () => {
-                                await runApiRemoteTargetWorkflow();
+                                try {
+                                    await runApiRemoteTargetWorkflow();
+                                } catch (error) {
+                                    plugin.displayError(error);
+                                }
                             })
                     );
             },
