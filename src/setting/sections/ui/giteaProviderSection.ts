@@ -18,8 +18,10 @@ export function renderGiteaProviderSection({
     getToken,
     setToken,
     persistAndReloadSync,
-    scheduleApiRemoteTargetPrompt,
+    runApiRemoteTargetWorkflow,
     reloadSyncManager,
+    isVaultLinked,
+    confirmTargetChange,
     requestUser,
     fetchRepos,
     fetchBranches,
@@ -35,11 +37,38 @@ export function renderGiteaProviderSection({
     let baseUrlDebounceTimer: ReturnType<typeof setTimeout> | undefined;
     let tokenRefreshTimer: ReturnType<typeof setTimeout> | undefined;
     let isDisposed = false;
+    // ── Draft state ─────────────────────────────────────────────────────────
+    let draftRepo: string | null = null;
+    let draftBranch: string | null = null;
+    let applySettingEl: HTMLElement | undefined = undefined;
+
+    const isDraftDirty = (): boolean =>
+        (draftRepo !== null && draftRepo !== (settings.giteaRepo ?? "")) ||
+        (draftBranch !== null && draftBranch !== (settings.giteaBranch ?? ""));
+
+    const effectiveRepo = (): string =>
+        draftRepo !== null ? draftRepo : settings.giteaRepo ?? "";
+    const effectiveBranch = (): string =>
+        draftBranch !== null ? draftBranch : settings.giteaBranch ?? "";
+
+    const revertDraft = (): void => {
+        draftRepo = null;
+        draftBranch = null;
+        if (repoDropdown) repoDropdown.setValue(settings.giteaRepo ?? "");
+        if (branchDropdown) branchDropdown.setValue(settings.giteaBranch ?? "");
+        updateApplyButton();
+    };
+
+    const updateApplyButton = (): void => {
+        if (!applySettingEl) return;
+        applySettingEl.style.display = isDraftDirty() ? "" : "none";
+    };
 
     const persistNormalizedTarget = async (
         nextRepo: string,
         nextBranch: string
     ): Promise<void> => {
+        if (isDraftDirty()) return;
         const repoChanged = (settings.giteaRepo ?? "") !== nextRepo;
         const branchChanged = (settings.giteaBranch ?? "") !== nextBranch;
         settings.giteaRepo = nextRepo;
@@ -68,23 +97,22 @@ export function renderGiteaProviderSection({
         Record<string, string> | null | undefined
     > => {
         if (!branchDropdown) return;
+        const activeRepo = effectiveRepo();
+        const activeBranch = effectiveBranch();
         const seq = ++dropdownLoadSeq;
         setDropdownOptions(branchDropdown, { "": "Refreshing..." });
         try {
             const branches = await fetchBranches(
                 settings.giteaOwner ?? "",
-                settings.giteaRepo ?? ""
+                activeRepo
             );
             if (seq !== dropdownLoadSeq) return;
             const nextBranch = setDropdownOptions(
                 branchDropdown,
-                preserveCurrentDropdownOption(
-                    branches,
-                    settings.giteaBranch ?? ""
-                ),
-                settings.giteaBranch ?? ""
+                preserveCurrentDropdownOption(branches, activeBranch),
+                activeBranch
             );
-            await persistNormalizedTarget(settings.giteaRepo ?? "", nextBranch);
+            await persistNormalizedTarget(activeRepo, nextBranch);
             return branches;
         } catch (error) {
             if (seq !== dropdownLoadSeq) return;
@@ -100,6 +128,8 @@ export function renderGiteaProviderSection({
     };
 
     const refreshReposAndBranches = async () => {
+        const activeRepo = effectiveRepo();
+        const activeBranch = effectiveBranch();
         const seq = ++dropdownLoadSeq;
         if (repoDropdown) {
             setDropdownOptions(repoDropdown, { "": "Refreshing..." });
@@ -112,8 +142,8 @@ export function renderGiteaProviderSection({
             if (seq !== dropdownLoadSeq) return;
             const nextRepo = setDropdownOptions(
                 repoDropdown,
-                preserveCurrentDropdownOption(repos, settings.giteaRepo ?? ""),
-                settings.giteaRepo ?? ""
+                preserveCurrentDropdownOption(repos, activeRepo),
+                activeRepo
             );
             const branches = await fetchBranches(
                 settings.giteaOwner ?? "",
@@ -122,11 +152,8 @@ export function renderGiteaProviderSection({
             if (seq !== dropdownLoadSeq) return;
             const nextBranch = setDropdownOptions(
                 branchDropdown,
-                preserveCurrentDropdownOption(
-                    branches,
-                    settings.giteaBranch ?? ""
-                ),
-                settings.giteaBranch ?? ""
+                preserveCurrentDropdownOption(branches, activeBranch),
+                activeBranch
             );
             await persistNormalizedTarget(nextRepo, nextBranch);
         } catch (error) {
@@ -339,10 +366,15 @@ export function renderGiteaProviderSection({
                         repoDropdown = dd;
                         dd.addOptions({ "": "Loading repositories..." });
                         dd.setValue(settings.giteaRepo ?? "");
-                        dd.onChange(async (v) => {
-                            settings.giteaRepo = v || "";
-                            await persistAndReloadSync();
-                            await refreshReposAndBranches();
+                        dd.onChange((v) => {
+                            const next = v || "";
+                            if (
+                                next === (draftRepo ?? settings.giteaRepo ?? "")
+                            )
+                                return;
+                            draftRepo = next;
+                            updateApplyButton();
+                            void refreshReposAndBranches();
                         });
                     })
                     .addExtraButton((btn: ExtraButtonComponent) => {
@@ -362,16 +394,15 @@ export function renderGiteaProviderSection({
                         branchDropdown = dd;
                         dd.addOptions({ "": "Select a repository first" });
                         dd.setValue(settings.giteaBranch ?? "");
-                        dd.onChange(async (v) => {
-                            settings.giteaBranch = v || "";
-                            await persistAndReloadSync();
+                        dd.onChange((v) => {
+                            const next = v || "";
                             if (
-                                settings.giteaOwner &&
-                                settings.giteaRepo &&
-                                settings.giteaBranch
-                            ) {
-                                scheduleApiRemoteTargetPrompt();
-                            }
+                                next ===
+                                (draftBranch ?? settings.giteaBranch ?? "")
+                            )
+                                return;
+                            draftBranch = next;
+                            updateApplyButton();
                         });
                     })
                     .addExtraButton((btn: ExtraButtonComponent) => {
@@ -383,6 +414,65 @@ export function renderGiteaProviderSection({
                             void refreshBranches();
                         });
                     });
+
+                // ── Apply button ──────────────────────────────────────────────
+                const applySetting = new Setting(sectionContainerEl)
+                    .setName("Apply target change")
+                    .setDesc(
+                        isVaultLinked
+                            ? "This will replace the current sync target. A confirmation will be shown."
+                            : "Set the selected repository and branch as the sync target."
+                    )
+                    .addButton((b) => {
+                        b.setButtonText("Apply")
+                            .setCta()
+                            .onClick(async () => {
+                                const repo = effectiveRepo();
+                                const branch = effectiveBranch();
+                                if (!repo || !branch) {
+                                    showNotice(
+                                        "Select a repository and branch first.",
+                                        4000
+                                    );
+                                    return;
+                                }
+                                b.setDisabled(true);
+                                b.setButtonText("Applying…");
+                                try {
+                                    const confirmed = await confirmTargetChange(
+                                        repo,
+                                        branch
+                                    );
+                                    if (!confirmed) {
+                                        revertDraft();
+                                        return;
+                                    }
+                                    settings.giteaRepo = repo;
+                                    settings.giteaBranch = branch;
+                                    await persistAndReloadSync();
+                                    draftRepo = null;
+                                    draftBranch = null;
+                                    updateApplyButton();
+                                    if (
+                                        settings.giteaOwner &&
+                                        settings.giteaRepo &&
+                                        settings.giteaBranch
+                                    ) {
+                                        await runApiRemoteTargetWorkflow();
+                                    }
+                                } catch (error) {
+                                    showNotice(
+                                        `Failed to apply target change: ${error instanceof Error ? error.message : String(error)}`,
+                                        6000
+                                    );
+                                } finally {
+                                    b.setButtonText("Apply");
+                                    b.setDisabled(false);
+                                }
+                            });
+                    });
+                applySettingEl = applySetting.settingEl;
+                applySettingEl.style.display = "none";
 
                 if (!initialRepoRefreshContainers.has(containerEl)) {
                     initialRepoRefreshContainers.add(containerEl);
@@ -482,9 +572,9 @@ export function renderGiteaProviderSection({
                                         `Repository "${result.name}" created. Opening sync dialog…`,
                                         4000
                                     );
-                                    // Open the "Choose action" modal so the user
-                                    // can push this vault to the new empty repo.
-                                    scheduleApiRemoteTargetPrompt();
+                                    // Open the remote-actions dialog immediately
+                                    // so the user can choose how to use the new repo.
+                                    await runApiRemoteTargetWorkflow();
                                 } catch (err) {
                                     console.error(
                                         "Failed to create Gitea repository:",

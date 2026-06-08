@@ -7,54 +7,74 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
             - name: Install modules
-              run: pnpm install
+              run: pnpm install --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run Svelte-Check
               run: pnpm run svelte
     lint:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
             - name: Install modules
-              run: pnpm install
+              run: pnpm install --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run ESLint
               run: pnpm run lint
     format:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
             - name: Install modules
-              run: pnpm install
+              run: pnpm install --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run Prettier
               run: pnpm run format
     compile:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
             - name: Install modules
-              run: pnpm install
+              run: pnpm install --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run tsc
               run: pnpm run tsc --noEmit
     build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: latest
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
             - name: Install modules
-              run: pnpm install
+              run: pnpm install --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run build
               run: pnpm run build

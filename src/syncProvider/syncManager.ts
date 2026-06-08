@@ -34,6 +34,13 @@ type EventRefEntry = {
     source: "vault" | "workspace";
 };
 
+export type BranchRefreshReason =
+    | "view-open"
+    | "view-mounted"
+    | "workspace-refreshed"
+    | "provider-changed"
+    | "manual";
+
 /**
  * SyncManager
  *
@@ -189,6 +196,9 @@ export class SyncManager {
             await provider.init();
             this.provider = provider;
             this.state.setProvider(this.plugin.settings.activeSyncProvider);
+            this.state.setProviderReady(true);
+            // Invalidate stale branch selection until a fresh fetch completes
+            this.state.setBranchSelection(null);
             this.audit("provider.initialise:success", {
                 mode,
                 providerClass: provider.constructor.name,
@@ -196,6 +206,8 @@ export class SyncManager {
             return true;
         } catch (error) {
             this.provider = null;
+            this.state.setProviderReady(false);
+            this.state.setBranchSelection(null);
             const message = this.getErrorMessage(error);
             this.state.markSyncError(message);
             this.audit("provider.initialise:failure", {
@@ -235,28 +247,37 @@ export class SyncManager {
         // later in the session.
         try {
             await this.refreshBranchSelection();
+            // refreshBranchSelection() already calls getBranchSelection() which
+            // publishes to SyncState via setBranchSelection(); no duplicate needed.
             // Update the branch status bar if present so the label reflects
             // the freshly-fetched branch info on boot.
             await this.plugin.branchBar?.display().catch(() => {});
-            // Notify any UI consumers (e.g. the source-control view) that
-            // branch selection has been refreshed so they can re-query and
-            // update their controls on initial boot.
-            try {
-                this.plugin.app.workspace.trigger("obsidian-git:refreshed");
-            } catch {
-                // Best-effort only; ignore if workspace is not ready.
-            }
         } catch (err) {
             // Non-fatal: log and continue. UI will refresh on-demand later.
             this.plugin.log(
                 "[Git Vault] Failed to prefetch branch selection on init:",
                 err
             );
+        } finally {
+            // Always notify UI consumers (e.g. the source-control view) that
+            // initialisation has completed, even on failure. Views that mount
+            // before init finishes rely on this event to stop showing stale
+            // loading state and to fall back to cached/default values.
+            try {
+                this.plugin.app.workspace.trigger("obsidian-git:refreshed");
+            } catch (err) {
+                console.warn(
+                    "[Git Vault] obsidian-git:refreshed trigger failed:",
+                    err
+                );
+            }
         }
     }
 
     /** Tear down all listeners and timers. */
     unload(): void {
+        this.state.setProviderReady(false);
+        this.state.setBranchSelection(null);
         this.clearSmartTriggers();
     }
 
@@ -264,6 +285,8 @@ export class SyncManager {
     async reload(): Promise<void> {
         // Invalidate cached branch selections on reload to avoid stale data
         this.cachedBranchSelections.clear();
+        this.state.setProviderReady(false);
+        this.state.setBranchSelection(null);
         this.clearSmartTriggers();
         this.refreshCompiledPatterns();
         // Clear any conflicts that were surfaced for the previous repo/branch so
@@ -389,7 +412,9 @@ export class SyncManager {
 
     async getBranchSelection(): Promise<SyncBranchSelection> {
         if (!this.provider) {
-            return this.getCachedBranchSelectionFallback();
+            const fallback = this.getCachedBranchSelectionFallback();
+            this.state.setBranchSelection(fallback);
+            return fallback;
         }
         const cacheKey = this.getBranchSelectionCacheKey();
         const cached = this.cachedBranchSelections.get(cacheKey);
@@ -404,15 +429,19 @@ export class SyncManager {
                 selection.branches.length <= 1 &&
                 selection.current.length > 0;
 
-            if (shouldReuseCachedBranches) {
-                return this.normalizeBranchSelection(cached, selection.current);
-            }
+            const final = shouldReuseCachedBranches
+                ? this.normalizeBranchSelection(cached, selection.current)
+                : selection;
 
-            if (selection.branches.length > 0) {
-                this.cachedBranchSelections.set(cacheKey, selection);
+            if (final.branches.length > 0) {
+                this.cachedBranchSelections.set(cacheKey, final);
             }
-            return selection;
+            // Publish to reactive state so all UI subscribers see the update
+            this.state.setBranchSelectionReady(final);
+            return final;
         } catch (error) {
+            const message = this.getErrorMessage(error);
+            this.state.setBranchSelectionError(message);
             const fallback = this.getCachedBranchSelectionFallback();
             if (fallback.branches.length > 0) {
                 console.debug(
@@ -425,9 +454,50 @@ export class SyncManager {
         }
     }
 
-    async refreshBranchSelection(): Promise<SyncBranchSelection> {
+    /**
+     * Force-refresh the branch selection, bypassing any cached value.
+     * Publishes loading → ready/error transitions through SyncState so the
+     * UI can reactively show progress.
+     */
+    async refreshBranchSelection(
+        _reason?: BranchRefreshReason
+    ): Promise<SyncBranchSelection> {
+        this.state.setBranchSelectionLoading();
         this.cachedBranchSelections.delete(this.getBranchSelectionCacheKey());
         return this.getBranchSelection();
+    }
+
+    /**
+     * Idempotent guard — only refreshes branch selection when the current
+     * state is missing, in error, or stale.  Safe to call from view mounts,
+     * event handlers, and timer callbacks without causing duplicate fetches.
+     */
+    async ensureBranchSelectionFresh(
+        reason: BranchRefreshReason
+    ): Promise<void> {
+        const currentState = this.state.getState();
+
+        if (!currentState.providerReady) return;
+
+        if (
+            !currentState.branchSelection ||
+            currentState.branchSelectionStatus === "error" ||
+            this.isBranchSelectionStale()
+        ) {
+            this.audit("branch-selection:ensure-fresh", { reason });
+            await this.refreshBranchSelection(reason);
+        }
+    }
+
+    /**
+     * Returns true when the in-memory cache has no entry for the current
+     * provider+repo combination, meaning the cached value was evicted (e.g.
+     * after reload()) or never populated.
+     */
+    private isBranchSelectionStale(): boolean {
+        return !this.cachedBranchSelections.has(
+            this.getBranchSelectionCacheKey()
+        );
     }
 
     private async confirmApiBranchReplacement(

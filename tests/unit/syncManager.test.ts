@@ -6,10 +6,14 @@ function createPlugin() {
         conflicts: Array<{ path: string }>;
         pendingChanges: Array<{ path: string }>;
         provider: string;
+        branchSelection: null;
+        providerReady: boolean;
     } = {
         conflicts: [],
         pendingChanges: [],
         provider: "github",
+        branchSelection: null,
+        providerReady: false,
     };
 
     return {
@@ -40,6 +44,8 @@ function createPlugin() {
         ),
         syncState: {
             setProvider: vi.fn(),
+            setProviderReady: vi.fn(),
+            setBranchSelection: vi.fn(),
             markSyncError: vi.fn(),
             markSyncStart: vi.fn(),
             markSyncSuccess: vi.fn(),
@@ -241,8 +247,10 @@ describe("SyncManager notices", () => {
 
         plugin.syncState.getState = vi.fn(() => ({
             conflicts: [{ path: "note.md" }],
-            pendingChanges: [],
+            pendingChanges: [] as Array<{ path: string }>,
             provider: "github",
+            branchSelection: null,
+            providerReady: false,
         }));
 
         (manager as unknown as { provider: typeof provider }).provider =
@@ -297,8 +305,10 @@ describe("SyncManager notices", () => {
 
         plugin.syncState.getState = vi.fn(() => ({
             conflicts: [{ path: "note.md" }],
-            pendingChanges: [],
+            pendingChanges: [] as Array<{ path: string }>,
             provider: "git",
+            branchSelection: null,
+            providerReady: false,
         }));
 
         (manager as unknown as { provider: typeof provider }).provider =

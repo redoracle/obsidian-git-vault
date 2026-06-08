@@ -1153,6 +1153,12 @@ export default class ObsidianGit extends Plugin {
         return this.gitOperations.cloneNewRepo(cloneOptions);
     }
 
+    triggerDedicatedVaultClone(remoteUrl: string): void {
+        void this.cloneGitRepoAsDedicatedVault(remoteUrl).catch(
+            (error: unknown) => this.displayError(error)
+        );
+    }
+
     private async ensureGitManagerForSetup(): Promise<void> {
         // Explicit runtime check for an already-initialized gitManager.
         // Use `!= null` to cover both `undefined` and `null` values.
