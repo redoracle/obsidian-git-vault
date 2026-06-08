@@ -15,7 +15,9 @@ export function renderGitHubProviderSection({
     getToken,
     setToken,
     persistAndReloadSync,
-    scheduleApiRemoteTargetPrompt,
+    runApiRemoteTargetWorkflow,
+    isVaultLinked,
+    confirmTargetChange,
     requestUser,
     fetchRepos,
     fetchBranches,
@@ -32,11 +34,40 @@ export function renderGitHubProviderSection({
     // Sequence counter to discard out-of-order repo/branch fetches when the
     // user changes the dropdowns or the initial load resolves late.
     let dropdownLoadSeq = 0;
+    // ── Draft state for manual repo/branch changes ──────────────────────────
+    let draftRepo: string | null = null;
+    let draftBranch: string | null = null;
+    let applySettingEl: HTMLElement | undefined = undefined;
+
+    const isDraftDirty = (): boolean =>
+        (draftRepo !== null && draftRepo !== (settings.githubRepo ?? "")) ||
+        (draftBranch !== null && draftBranch !== (settings.githubBranch ?? ""));
+
+    const effectiveRepo = (): string =>
+        draftRepo !== null ? draftRepo : settings.githubRepo ?? "";
+    const effectiveBranch = (): string =>
+        draftBranch !== null ? draftBranch : settings.githubBranch ?? "";
+
+    const revertDraft = (): void => {
+        draftRepo = null;
+        draftBranch = null;
+        if (repoDropdown) repoDropdown.setValue(settings.githubRepo ?? "");
+        if (branchDropdown)
+            branchDropdown.setValue(settings.githubBranch ?? "");
+        updateApplyButton();
+    };
+
+    const updateApplyButton = (): void => {
+        if (!applySettingEl) return;
+        applySettingEl.style.display = isDraftDirty() ? "" : "none";
+    };
 
     const persistNormalizedTarget = async (
         nextRepo: string,
         nextBranch: string
     ): Promise<void> => {
+        // Skip auto-persist when the user has uncommitted draft changes
+        if (isDraftDirty()) return;
         const repoChanged = (settings.githubRepo ?? "") !== nextRepo;
         const branchChanged = (settings.githubBranch ?? "") !== nextBranch;
         settings.githubRepo = nextRepo;
@@ -50,41 +81,36 @@ export function renderGitHubProviderSection({
         owner: string,
         seq: number
     ): Promise<void> => {
+        const activeRepo = effectiveRepo();
         const repos = await fetchRepos(owner);
         if (seq !== dropdownLoadSeq) return;
         const nextRepo = setDropdownOptions(
             repoDropdown,
-            preserveCurrentDropdownOption(repos, settings.githubRepo ?? ""),
-            settings.githubRepo ?? ""
+            preserveCurrentDropdownOption(repos, activeRepo),
+            activeRepo
         );
         const branches = await fetchBranches(owner, nextRepo);
         if (seq !== dropdownLoadSeq) return;
+        const activeBranch = effectiveBranch();
         const nextBranch = setDropdownOptions(
             branchDropdown,
-            preserveCurrentDropdownOption(
-                branches,
-                settings.githubBranch ?? ""
-            ),
-            settings.githubBranch ?? ""
+            preserveCurrentDropdownOption(branches, activeBranch),
+            activeBranch
         );
         await persistNormalizedTarget(nextRepo, nextBranch);
     };
 
     const refreshBranchOptions = async (seq: number): Promise<void> => {
-        const branches = await fetchBranches(
-            settings.githubOwner,
-            settings.githubRepo
-        );
+        const activeRepo = effectiveRepo();
+        const activeBranch = effectiveBranch();
+        const branches = await fetchBranches(settings.githubOwner, activeRepo);
         if (seq !== dropdownLoadSeq) return;
         const nextBranch = setDropdownOptions(
             branchDropdown,
-            preserveCurrentDropdownOption(
-                branches,
-                settings.githubBranch ?? ""
-            ),
-            settings.githubBranch ?? ""
+            preserveCurrentDropdownOption(branches, activeBranch),
+            activeBranch
         );
-        await persistNormalizedTarget(settings.githubRepo ?? "", nextBranch);
+        await persistNormalizedTarget(activeRepo, nextBranch);
     };
 
     // Debounce timer for the token input so we don't fire API calls on every
@@ -281,27 +307,30 @@ export function renderGitHubProviderSection({
                         dd.addOptions({ "": "Loading repositories..." });
                         dd.setValue(settings.githubRepo ?? "");
                         dd.onChange(async (v) => {
-                            const previousRepo = settings.githubRepo;
-                            settings.githubRepo = v || "";
-                            try {
-                                await persistAndReloadSync();
-                            } catch (error) {
-                                settings.githubRepo = previousRepo;
-                                repoDropdown?.setValue(previousRepo ?? "");
-                                console.error(
-                                    "Failed to persist GitHub repo change:",
-                                    error
-                                );
-                                showNotice(
-                                    `Failed to save GitHub repo: ${error instanceof Error ? error.message : String(error)}`,
-                                    6000
-                                );
-                                return;
-                            }
+                            draftRepo = v || "";
+                            // Reset branch draft when repo changes to avoid
+                            // carrying a stale branch from the previous repo.
+                            draftBranch = settings.githubBranch ?? "";
+                            updateApplyButton();
 
                             const seq = ++dropdownLoadSeq;
                             try {
-                                await refreshBranchOptions(seq);
+                                // Refresh branches for the draft repo so the
+                                // branch dropdown updates immediately.
+                                const branches = await fetchBranches(
+                                    settings.githubOwner ?? "",
+                                    draftRepo
+                                );
+                                if (seq !== dropdownLoadSeq) return;
+                                setDropdownOptions(
+                                    branchDropdown,
+                                    preserveCurrentDropdownOption(
+                                        branches,
+                                        settings.githubBranch ?? ""
+                                    ),
+                                    // Show the persisted branch, not the draft
+                                    settings.githubBranch ?? ""
+                                );
                             } catch (error) {
                                 console.error(
                                     "Failed to fetch GitHub branches after repo change:",
@@ -358,30 +387,9 @@ export function renderGitHubProviderSection({
                         branchDropdown = dd;
                         dd.addOptions({ "": "Select a branch" });
                         dd.setValue(settings.githubBranch ?? "");
-                        dd.onChange(async (v) => {
-                            const previousBranch = settings.githubBranch;
-                            settings.githubBranch = v || "";
-                            try {
-                                await persistAndReloadSync();
-                                if (
-                                    settings.githubOwner &&
-                                    settings.githubRepo &&
-                                    settings.githubBranch
-                                ) {
-                                    scheduleApiRemoteTargetPrompt();
-                                }
-                            } catch (error) {
-                                settings.githubBranch = previousBranch;
-                                branchDropdown?.setValue(previousBranch ?? "");
-                                console.error(
-                                    "Failed to persist GitHub branch change:",
-                                    error
-                                );
-                                showNotice(
-                                    `Failed to save GitHub branch: ${error instanceof Error ? error.message : String(error)}`,
-                                    6000
-                                );
-                            }
+                        dd.onChange((v) => {
+                            draftBranch = v || "";
+                            updateApplyButton();
                         });
                     })
                     .addExtraButton((btn: ExtraButtonComponent) => {
@@ -413,6 +421,89 @@ export function renderGitHubProviderSection({
                             }
                         });
                     });
+
+                // ── Apply button (visible only when draft differs from settings) ─
+                const applySetting = new Setting(sectionContainerEl)
+                    .setName("Apply target change")
+                    .setDesc(
+                        isVaultLinked
+                            ? "This will replace the current sync target. A confirmation will be shown."
+                            : "Set the selected repository and branch as the sync target."
+                    )
+                    .addButton((b) => {
+                        b.setButtonText("Apply")
+                            .setCta()
+                            .onClick(async () => {
+                                const repo = effectiveRepo();
+                                const branch = effectiveBranch();
+                                if (!repo || !branch) {
+                                    showNotice(
+                                        "Select a repository and branch first.",
+                                        4000
+                                    );
+                                    return;
+                                }
+                                b.setDisabled(true);
+                                b.setButtonText("Applying…");
+                                try {
+                                    const confirmed = await confirmTargetChange(
+                                        repo,
+                                        branch
+                                    );
+                                    if (!confirmed) {
+                                        // User cancelled — revert draft
+                                        revertDraft();
+                                        return;
+                                    }
+                                    // Persist the change
+                                    settings.githubRepo = repo;
+                                    settings.githubBranch = branch;
+                                    await persistAndReloadSync();
+                                    // Clear draft state
+                                    draftRepo = null;
+                                    draftBranch = null;
+                                    updateApplyButton();
+                                    // Open the remote-actions dialog immediately
+                                    // after a confirmed switch so the user can
+                                    // choose how to use the new target.
+                                    if (
+                                        settings.githubOwner &&
+                                        settings.githubRepo &&
+                                        settings.githubBranch
+                                    ) {
+                                        void Promise.resolve()
+                                            .then(() =>
+                                                runApiRemoteTargetWorkflow()
+                                            )
+                                            .catch((error: unknown) => {
+                                                console.error(
+                                                    "[ObsidianGit] Failed to open remote-actions workflow after GitHub target change",
+                                                    error
+                                                );
+                                                showNotice(
+                                                    `Failed to open remote actions: ${
+                                                        error instanceof Error
+                                                            ? error.message
+                                                            : String(error)
+                                                    }`,
+                                                    6000
+                                                );
+                                            });
+                                    }
+                                } catch (error) {
+                                    showNotice(
+                                        `Failed to apply target change: ${error instanceof Error ? error.message : String(error)}`,
+                                        6000
+                                    );
+                                } finally {
+                                    b.setButtonText("Apply");
+                                    b.setDisabled(false);
+                                }
+                            });
+                    });
+                applySettingEl = applySetting.settingEl;
+                // Initially hidden; shown when draft differs from settings
+                applySettingEl.style.display = "none";
 
                 void (async () => {
                     const seq = ++dropdownLoadSeq;
@@ -572,9 +663,9 @@ export function renderGitHubProviderSection({
                                         `Repository "${result.name}" created. Opening sync dialog…`,
                                         4000
                                     );
-                                    // Open the "Choose action" modal so the user
-                                    // can push this vault to the new empty repo.
-                                    scheduleApiRemoteTargetPrompt();
+                                    // Open the remote-actions dialog immediately
+                                    // so the user can choose how to use the new repo.
+                                    await runApiRemoteTargetWorkflow();
                                 } catch (err) {
                                     console.error(
                                         "[ObsidianGit] Failed to create GitHub repository",

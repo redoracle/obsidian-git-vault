@@ -40,8 +40,10 @@ export function renderGitLabProviderSection({
     getToken,
     setToken,
     persistAndReloadSync,
-    scheduleApiRemoteTargetPrompt,
+    runApiRemoteTargetWorkflow,
     reloadSyncManager,
+    isVaultLinked,
+    confirmTargetChange,
     requestUser,
     fetchProjects,
     fetchBranches,
@@ -56,6 +58,38 @@ export function renderGitLabProviderSection({
     let dropdownLoadSeq = 0;
     let gitlabTokenComponent: TextComponent | undefined;
     let tokenRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+    // ── Draft state ─────────────────────────────────────────────────────────
+    let draftProjectId: string | null = null;
+    let draftBranch: string | null = null;
+    let applySettingEl: HTMLElement | undefined = undefined;
+
+    const isDraftDirty = (): boolean =>
+        (draftProjectId !== null &&
+            draftProjectId !==
+                normalizeGitLabProjectId(settings.gitlabProjectId ?? "")) ||
+        (draftBranch !== null && draftBranch !== (settings.gitlabBranch ?? ""));
+
+    const effectiveProjectId = (): string =>
+        draftProjectId !== null
+            ? draftProjectId
+            : normalizeGitLabProjectId(settings.gitlabProjectId ?? "");
+    const effectiveBranch = (): string =>
+        draftBranch !== null ? draftBranch : settings.gitlabBranch ?? "";
+
+    const revertDraft = (): void => {
+        draftProjectId = null;
+        draftBranch = null;
+        if (projectDropdown) projectDropdown.setValue(currentProjectId());
+        if (projectInput) projectInput.setValue(currentProjectId());
+        if (branchDropdown)
+            branchDropdown.setValue(settings.gitlabBranch ?? "");
+        updateApplyButton();
+    };
+
+    const updateApplyButton = (): void => {
+        if (!applySettingEl) return;
+        applySettingEl.style.display = isDraftDirty() ? "" : "none";
+    };
 
     // Resolve a project's default branch via the API. Returns the project's
     // `default_branch` trimmed, or "main" as a safe fallback. Errors are
@@ -82,6 +116,7 @@ export function renderGitLabProviderSection({
         nextProjectId: string,
         nextBranch: string
     ): Promise<void> => {
+        if (isDraftDirty()) return;
         const projectChanged = currentProjectId() !== nextProjectId;
         const branchChanged = (settings.gitlabBranch ?? "") !== nextBranch;
         settings.gitlabProjectId = nextProjectId;
@@ -94,22 +129,22 @@ export function renderGitLabProviderSection({
 
     const refreshBranches = async () => {
         if (!branchDropdown) return;
+        const projectId = isDraftDirty()
+            ? effectiveProjectId()
+            : currentProjectId();
         const seq = ++dropdownLoadSeq;
         setDropdownOptions(branchDropdown, { "": "Refreshing..." });
         try {
-            const branches = await fetchBranches(currentProjectId());
+            const branches = await fetchBranches(projectId);
             if (seq !== dropdownLoadSeq) return;
             const nextBranch = setDropdownOptions(
                 branchDropdown,
-                preserveCurrentDropdownOption(
-                    branches,
-                    settings.gitlabBranch ?? ""
-                ),
-                settings.gitlabBranch ?? ""
+                preserveCurrentDropdownOption(branches, effectiveBranch()),
+                effectiveBranch()
             );
             // Attempt to persist but do not fail the UI if persistence fails
             try {
-                await persistNormalizedTarget(currentProjectId(), nextBranch);
+                await persistNormalizedTarget(projectId, nextBranch);
             } catch (persistError) {
                 showNotice(
                     `Failed to persist selection: ${persistError instanceof Error ? persistError.message : String(persistError)}`,
@@ -132,33 +167,35 @@ export function renderGitLabProviderSection({
 
     const refreshProjectsAndBranches = async () => {
         const seq = ++dropdownLoadSeq;
+        const activeProjectId = effectiveProjectId();
+        const activeBranch = effectiveBranch();
         if (projectDropdown) {
             setDropdownOptions(
                 projectDropdown,
-                transientOptions(currentProjectId(), "Refreshing..."),
-                currentProjectId()
+                transientOptions(activeProjectId, "Refreshing..."),
+                activeProjectId
             );
         }
         if (branchDropdown) {
             setDropdownOptions(
                 branchDropdown,
-                transientOptions(settings.gitlabBranch ?? "", "Refreshing..."),
-                settings.gitlabBranch ?? ""
+                transientOptions(activeBranch, "Refreshing..."),
+                activeBranch
             );
         }
         try {
             const projects = await fetchProjects();
             if (seq !== dropdownLoadSeq) return;
-            let nextProjectId = currentProjectId();
+            let nextProjectId = activeProjectId;
             if (projectDropdown) {
                 nextProjectId = normalizeGitLabProjectId(
                     setDropdownOptions(
                         projectDropdown,
                         preserveCurrentDropdownOption(
                             projects,
-                            currentProjectId()
+                            activeProjectId
                         ),
-                        currentProjectId()
+                        activeProjectId
                     )
                 );
                 projectInput?.setValue(nextProjectId);
@@ -170,13 +207,10 @@ export function renderGitLabProviderSection({
                 let nextBranch = branchDropdown
                     ? setDropdownOptions(
                           branchDropdown,
-                          preserveCurrentDropdownOption(
-                              branches,
-                              settings.gitlabBranch ?? ""
-                          ),
-                          settings.gitlabBranch ?? ""
+                          preserveCurrentDropdownOption(branches, activeBranch),
+                          activeBranch
                       )
-                    : settings.gitlabBranch ?? "";
+                    : activeBranch;
 
                 // If no branch is selected yet, attempt to resolve the
                 // project's default branch via the API and fall back to
@@ -367,10 +401,9 @@ export function renderGitLabProviderSection({
                         dd.addOptions({ "": "Loading projects..." });
                         dd.setValue(currentProjectId());
                         dd.onChange(async (v) => {
-                            settings.gitlabProjectId =
-                                normalizeGitLabProjectId(v);
-                            projectInput?.setValue(settings.gitlabProjectId);
-                            await persistAndReloadSync();
+                            draftProjectId = normalizeGitLabProjectId(v);
+                            projectInput?.setValue(draftProjectId);
+                            updateApplyButton();
                             await refreshBranches();
                         });
                     })
@@ -394,11 +427,10 @@ export function renderGitLabProviderSection({
                         t.setValue(currentProjectId());
                         t.setPlaceholder("group/my-vault");
                         t.onChange(async (v) => {
-                            settings.gitlabProjectId =
-                                normalizeGitLabProjectId(v);
-                            await persistAndReloadSync();
+                            draftProjectId = normalizeGitLabProjectId(v);
+                            updateApplyButton();
                             if (projectDropdown) {
-                                projectDropdown.setValue(currentProjectId());
+                                projectDropdown.setValue(draftProjectId);
                             }
                             await refreshBranches();
                         });
@@ -411,15 +443,9 @@ export function renderGitLabProviderSection({
                         branchDropdown = dd;
                         dd.addOptions({ "": "Select a project first" });
                         dd.setValue(settings.gitlabBranch ?? "");
-                        dd.onChange(async (v) => {
-                            settings.gitlabBranch = v || "";
-                            await persistAndReloadSync();
-                            if (
-                                settings.gitlabProjectId &&
-                                settings.gitlabBranch
-                            ) {
-                                scheduleApiRemoteTargetPrompt();
-                            }
+                        dd.onChange((v) => {
+                            draftBranch = v || "";
+                            updateApplyButton();
                         });
                     })
                     .addExtraButton((btn: ExtraButtonComponent) => {
@@ -431,6 +457,64 @@ export function renderGitLabProviderSection({
                             void refreshBranches();
                         });
                     });
+
+                // ── Apply button ──────────────────────────────────────────────
+                const applySetting = new Setting(sectionContainerEl)
+                    .setName("Apply target change")
+                    .setDesc(
+                        isVaultLinked
+                            ? "This will replace the current sync target. A confirmation will be shown."
+                            : "Set the selected project and branch as the sync target."
+                    )
+                    .addButton((b) => {
+                        b.setButtonText("Apply")
+                            .setCta()
+                            .onClick(async () => {
+                                const projectId = effectiveProjectId();
+                                const branch = effectiveBranch();
+                                if (!projectId || !branch) {
+                                    showNotice(
+                                        "Select a project and branch first.",
+                                        4000
+                                    );
+                                    return;
+                                }
+                                b.setDisabled(true);
+                                b.setButtonText("Applying…");
+                                try {
+                                    const confirmed = await confirmTargetChange(
+                                        projectId,
+                                        branch
+                                    );
+                                    if (!confirmed) {
+                                        revertDraft();
+                                        return;
+                                    }
+                                    settings.gitlabProjectId = projectId;
+                                    settings.gitlabBranch = branch;
+                                    await persistAndReloadSync();
+                                    draftProjectId = null;
+                                    draftBranch = null;
+                                    updateApplyButton();
+                                    if (
+                                        settings.gitlabProjectId &&
+                                        settings.gitlabBranch
+                                    ) {
+                                        await runApiRemoteTargetWorkflow();
+                                    }
+                                } catch (error) {
+                                    showNotice(
+                                        `Failed to apply target change: ${error instanceof Error ? error.message : String(error)}`,
+                                        6000
+                                    );
+                                } finally {
+                                    b.setButtonText("Apply");
+                                    b.setDisabled(false);
+                                }
+                            });
+                    });
+                applySettingEl = applySetting.settingEl;
+                applySettingEl.style.display = "none";
 
                 void refreshProjectsAndBranches();
             },
@@ -514,9 +598,9 @@ export function renderGitLabProviderSection({
                                         `Project "${result.pathWithNamespace}" created. Opening sync dialog…`,
                                         4000
                                     );
-                                    // Open the "Choose action" modal so the user
-                                    // can push this vault to the new empty project.
-                                    scheduleApiRemoteTargetPrompt();
+                                    // Open the remote-actions dialog immediately
+                                    // so the user can choose how to use the new project.
+                                    await runApiRemoteTargetWorkflow();
                                 } catch (err) {
                                     console.error(
                                         "[ObsidianGit] Failed to create GitLab project",
