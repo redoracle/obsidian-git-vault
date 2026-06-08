@@ -70,7 +70,7 @@
         lastErrorCode: null,
         cachedGitStatus: null,
         branchSelection: null,
-        branchSelectionStatus: "idle" as SyncState["branchSelectionStatus"],
+        branchSelectionStatus: "idle",
         branchSelectionError: null,
         providerReady: false,
     });
