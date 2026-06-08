@@ -1,3 +1,4 @@
-ignoredBuiltDependencies:
-  - esbuild
-  - svelte-preprocess
+allowBuilds:
+  esbuild: set this to true or false
+  svelte-preprocess: set this to true or false
+onlyBuiltDependencies: '[esbuild, svelte-preprocess]'

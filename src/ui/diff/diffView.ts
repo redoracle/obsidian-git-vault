@@ -59,7 +59,7 @@ export default class DiffView extends ItemView {
     }
 
     getState(): Record<string, unknown> {
-        return this.state as unknown as Record<string, unknown>;
+        return this.state;
     }
 
     onClose(): Promise<void> {
