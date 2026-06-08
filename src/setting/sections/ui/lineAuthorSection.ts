@@ -181,7 +181,7 @@ export function renderLineAuthorSection({
             .setName("Follow movement and copies across files and commits")
             .setDesc("")
             .addDropdown((dropdown) => {
-                dropdown.addOptions(<Record<LineAuthorFollowMovement, string>>{
+                dropdown.addOptions({
                     inactive: "Do not follow (default)",
                     "same-commit": "Follow within same commit",
                     "all-commits": "Follow within all commits (maybe slow)",
