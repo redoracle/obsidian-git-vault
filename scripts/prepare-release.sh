@@ -17,8 +17,9 @@ jq --arg v "$VERSION" --arg m "$MIN_APP_VERSION" '.[$v] = $m' versions.json > ve
 
 echo "Updated package.json, manifest.json, versions.json to ${VERSION}"
 
-# Build the plugin
-pnpm run build
+# Build the plugin (call esbuild directly to avoid pnpm verify-deps-before-run
+# which fails after package.json version bump with ignored build scripts)
+node esbuild.config.mjs production
 
 echo "Build complete"
 
