@@ -43,3 +43,8 @@ yarn-error.log*
 sync-manifest.json
 secrets.txt
 .agent.md
+._*
+
+# Release pipeline
+.release-prepared
+git-vault.zip

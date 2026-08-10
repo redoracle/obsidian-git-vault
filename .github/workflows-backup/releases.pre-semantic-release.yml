@@ -1,3 +1,6 @@
+# Backed up on 2026-08-10
+# Reason: Migrated to semantic-release (@semantic-release/exec + @semantic-release/github)
+# Rollback: Restore this file to .github/workflows/ and remove release.yml
 name: Build obsidian plugin
 
 on:

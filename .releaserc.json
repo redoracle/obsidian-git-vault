@@ -1,0 +1,40 @@
+{
+  "branches": ["main"],
+  "tagFormat": "${version}",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "./scripts/prepare-release.sh ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "successComment": false,
+        "failComment": false,
+        "failTitle": false,
+        "labels": false,
+        "releasedLabels": false,
+        "assets": [
+          { "path": "main.js", "name": "main.js" },
+          { "path": "manifest.json", "name": "manifest.json" },
+          { "path": "styles.css", "name": "styles.css" },
+          { "path": "git-vault.zip", "name": "git-vault.zip" }
+        ]
+      }
+    ]
+  ]
+}

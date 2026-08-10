@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Sync manifest.json and versions.json to repo
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.WEB_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Check if semantic-release prepared a release
+          if [ ! -f .release-prepared ]; then
+            echo "No release prepared — skipping sync"
+            exit 0
+          fi
+
+          VERSION=$(cat .release-prepared)
+          echo "Syncing files for version ${VERSION}"
+
+          # Get current file SHAs from repo
+          MANIFEST_SHA=$(gh api repos/${{ github.repository }}/contents/manifest.json --jq '.sha')
+          VERSIONS_SHA=$(gh api repos/${{ github.repository }}/contents/versions.json --jq '.sha')
+          PACKAGE_SHA=$(gh api repos/${{ github.repository }}/contents/package.json --jq '.sha')
+
+          # Push updated manifest.json
+          ENCODED_MANIFEST=$(base64 -w 0 manifest.json)
+          gh api repos/${{ github.repository }}/contents/manifest.json \
+            -X PUT \
+            -f message="chore: update manifest.json for ${VERSION}" \
+            -f content="$ENCODED_MANIFEST" \
+            -f sha="$MANIFEST_SHA" \
+            --jq '.commit.sha'
+
+          # Push updated versions.json
+          ENCODED_VERSIONS=$(base64 -w 0 versions.json)
+          gh api repos/${{ github.repository }}/contents/versions.json \
+            -X PUT \
+            -f message="chore: update versions.json for ${VERSION}" \
+            -f content="$ENCODED_VERSIONS" \
+            -f sha="$VERSIONS_SHA" \
+            --jq '.commit.sha'
+
+          # Push updated package.json
+          ENCODED_PACKAGE=$(base64 -w 0 package.json)
+          gh api repos/${{ github.repository }}/contents/package.json \
+            -X PUT \
+            -f message="chore: update package.json for ${VERSION}" \
+            -f content="$ENCODED_PACKAGE" \
+            -f sha="$PACKAGE_SHA" \
+            --jq '.commit.sha'
+
+          echo "Sync complete: manifest.json, versions.json, package.json updated in repo for ${VERSION}"
