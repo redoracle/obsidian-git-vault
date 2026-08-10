@@ -1,12 +1,11 @@
 {
 	"name": "git-vault",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Hybrid Git + GitHub API sync for Obsidian with desktop power features and mobile-first reliability",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs dev",
 		"build": "node esbuild.config.mjs production",
-
 		"lint": "eslint src",
 		"format": "prettier --check src",
 		"tsc": "tsc --noEmit",
@@ -20,7 +19,6 @@
 	"keywords": [],
 	"author": "RedOracle",
 	"license": "MIT",
-
 	"engines": {
 		"node": ">=18",
 		"pnpm": ">=9"
