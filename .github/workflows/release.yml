@@ -48,7 +48,7 @@ jobs:
       - name: Sync manifest.json and versions.json to repo
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.WEB_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
