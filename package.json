@@ -36,7 +36,7 @@
     "@vitest/coverage-v8": "^4.1.4",
     "conventional-changelog-conventionalcommits": "^10.2.1",
     "esbuild": "^0.28.0",
-    "esbuild-svelte": "^0.8.2",
+    "esbuild-svelte": "^0.9.5",
     "eslint": "^10.2.1",
     "eslint-plugin-svelte": "^3.17.0",
     "moment": "^2.30.1",
