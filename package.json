@@ -41,7 +41,7 @@
     "eslint-plugin-svelte": "^3.24.0",
     "moment": "^2.31.0",
     "obsidian": "^1.14.4",
-    "prettier": "3.8.3",
+    "prettier": "3.9.10",
     "prettier-plugin-svelte": "^3.5.2",
     "scss": "^0.2.4",
     "semantic-release": "^25.0.9",
