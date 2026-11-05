@@ -358,22 +358,7 @@ export function formatRemoteUrl(url: string): string {
     return url;
 }
 
-/**
- * Sanitizes any credential-containing URLs inside an arbitrary text blob.
- *
- * This replaces occurrences like `https://user:pass@host/...` with
- * `https://[REDACTED]@host/...` so that logs and error messages do not
- * accidentally leak credentials.
- */
-export function sanitizeUrl(text: string): string {
-    if (!text) return text;
-    try {
-        // Replace credentials in http(s) URLs: scheme://user:pass@host -> scheme://[REDACTED]@host
-        return text.replace(/(https?:\/\/)(?:[^@\s/]+@)/gi, "$1[REDACTED]@");
-    } catch {
-        return text;
-    }
-}
+export { sanitizeUrl } from "./security/logRedaction";
 
 export function fileOpenableInObsidian(
     relativeVaultPath: string,
