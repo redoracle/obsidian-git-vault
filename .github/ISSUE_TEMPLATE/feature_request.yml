@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest an improvement with a concrete use case
+title: "[Feature]: "
+labels: "enhancement"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the limitation and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+      description: Describe expected behavior rather than only implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Affected backend
+      options:
+        - Git (desktop)
+        - GitHub API
+        - GitLab API
+        - Gitea / Forgejo API
+        - All backends / UI
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional workarounds or related designs.

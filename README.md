@@ -4,6 +4,7 @@ Obsidian Git Vault adds reliable, versioned syncing to your Obsidian vault. On d
 
 [![Obsidian Git Vault interface with sync button and status indicator](images/GitVault.png)](https://github.com/redoracle/obsidian-git-vault/releases)
 
+[![CI](https://github.com/redoracle/obsidian-git-vault/actions/workflows/test.yml/badge.svg)](https://github.com/redoracle/obsidian-git-vault/actions/workflows/test.yml)
 [![GitHub release](https://img.shields.io/github/v/release/redoracle/obsidian-git-vault?style=flat-square&logo=github)](https://github.com/redoracle/obsidian-git-vault/releases)
 [![GitHub stars](https://img.shields.io/github/stars/redoracle/obsidian-git-vault?style=flat-square&logo=github&color=yellow)](https://github.com/redoracle/obsidian-git-vault/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/redoracle/obsidian-git-vault?style=flat-square&logo=github)](https://github.com/redoracle/obsidian-git-vault/issues)
@@ -329,13 +330,17 @@ Key modules are organized around a `SyncProvider` interface that abstracts the s
 
 ## Contributing
 
+Read the [contributing guide](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md),
+and [support guide](SUPPORT.md). For vulnerabilities, use [private security
+reporting](SECURITY.md) instead of public issues.
+
 Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the reproducible toolchain, verification commands, provider architecture, and security boundaries. For larger changes, open an issue to discuss the approach first.
 
 ```bash
 # Clone and set up
 git clone https://github.com/redoracle/obsidian-git-vault.git
 cd obsidian-git-vault
-pnpm install
+pnpm install --frozen-lockfile
 
 # Build
 pnpm run build
