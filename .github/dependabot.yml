@@ -7,6 +7,17 @@ updates:
       open-pull-requests-limit: 5
       labels:
           - "dependencies"
+      groups:
+          safe-tooling:
+              dependency-type: "development"
+              update-types:
+                  - "minor"
+                  - "patch"
+      ignore:
+          # v11 requires Node 22; plugin desktop runtime may be older.
+          - dependency-name: "supports-color"
+            versions:
+                - ">=10.0.0"
 
     - package-ecosystem: "github-actions"
       directory: "/"
@@ -21,3 +32,8 @@ updates:
       open-pull-requests-limit: 3
       labels:
           - "dependencies"
+      ignore:
+          # Match CI Node 22; Node 26 declarations do not upgrade the runtime.
+          - dependency-name: "@types/node"
+            versions:
+                - ">=23.0.0"

@@ -33,10 +33,7 @@ export interface TargetChangeValidation {
 }
 
 export type TargetChangeAction =
-    | "cancel"
-    | "switch-vault"
-    | "clone-dedicated-vault"
-    | "create-submodule";
+    "cancel" | "switch-vault" | "clone-dedicated-vault" | "create-submodule";
 
 export interface TargetChangeResolution {
     action: TargetChangeAction;

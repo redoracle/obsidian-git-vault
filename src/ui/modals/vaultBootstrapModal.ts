@@ -20,9 +20,7 @@ interface IVaultOnboardingOptions {
 }
 
 type VaultBootstrapModalOptions =
-    | IVaultSuccessOptions
-    | IVaultManualOptions
-    | IVaultOnboardingOptions;
+    IVaultSuccessOptions | IVaultManualOptions | IVaultOnboardingOptions;
 
 export class VaultBootstrapModal extends Modal {
     constructor(

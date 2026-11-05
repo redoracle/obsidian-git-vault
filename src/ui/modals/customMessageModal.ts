@@ -9,8 +9,8 @@ export interface CustomMessageModalHost {
 
 export class CustomMessageModal extends SuggestModal<string> {
     resolve:
-        | ((value: string | PromiseLike<string> | undefined) => void)
-        | null = null;
+        ((value: string | PromiseLike<string> | undefined) => void) | null =
+        null;
     constructor(private readonly host: CustomMessageModalHost) {
         super(host.app);
         this.setPlaceholder(

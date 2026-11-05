@@ -1,8 +1,6 @@
 // Centralized typed error for encryption-related failures
 export type EncryptionErrorCode =
-    | "passphrase-required"
-    | "passphrase-mismatched"
-    | "other";
+    "passphrase-required" | "passphrase-mismatched" | "other";
 
 export class EncryptionError extends Error {
     public code: EncryptionErrorCode;
