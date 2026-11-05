@@ -173,7 +173,8 @@ export function arrayProxyWithNewLength<T>(array: T[], length: number): T[] {
             if (prop === "length") {
                 return Math.min(length, target.length);
             }
-            return target[prop as keyof T[]];
+            const value: unknown = Reflect.get(target, prop, target);
+            return value;
         },
     });
 }
