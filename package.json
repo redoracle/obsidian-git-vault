@@ -31,7 +31,7 @@
     "@types/deep-equal": "^1.0.4",
     "@types/diff": "^8.0.0",
     "@types/diff3": "^0.0.2",
-    "@types/node": "^22.20.2",
+    "@types/node": "^26.6.6",
     "@typescript-eslint/parser": "8.72.1",
     "@vitest/coverage-v8": "^4.1.12",
     "conventional-changelog-conventionalcommits": "^10.4.1",
