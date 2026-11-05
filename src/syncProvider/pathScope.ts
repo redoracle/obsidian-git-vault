@@ -1,10 +1,23 @@
 import { normalizePath } from "obsidian";
 
+/** Validate raw segments before normalizePath can collapse traversal. */
+function assertSafePathSegments(path: string, label: string): void {
+    if (
+        path.includes("\0") ||
+        path.split(/[\\/]/).some((segment) => segment === "..")
+    ) {
+        throw new Error(
+            "Invalid " + label + ": parent traversal is not allowed"
+        );
+    }
+}
+
 export function normalizeTrackedDirectory(path: string): string {
     const trimmed = path.trim().replace(/^\/+|\/+$/g, "");
     if (trimmed === "" || trimmed === ".") {
         return "";
     }
+    assertSafePathSegments(trimmed, "tracked directory");
     return normalizePath(trimmed);
 }
 
@@ -26,6 +39,7 @@ export function toRemoteScopedPath(
     trackedDirectory: string
 ): string {
     const root = normalizeTrackedDirectory(trackedDirectory);
+    assertSafePathSegments(vaultPath, "vault path");
     const normalizedVaultPath = normalizePath(vaultPath);
 
     if (root === "") {
@@ -48,7 +62,16 @@ export function toVaultScopedPath(
     trackedDirectory: string
 ): string {
     const root = normalizeTrackedDirectory(trackedDirectory);
-    const trimmedRemote = remotePath.trim().replace(/^\/+|\/+$/g, "");
+    const rawRemotePath = remotePath.trim();
+    if (
+        rawRemotePath.startsWith("/") ||
+        rawRemotePath.includes("\\") ||
+        /^[A-Za-z]:/.test(rawRemotePath)
+    ) {
+        throw new Error("Invalid remote path: expected a relative POSIX path");
+    }
+    assertSafePathSegments(rawRemotePath, "remote path");
+    const trimmedRemote = rawRemotePath.replace(/\/+$/g, "");
 
     if (trimmedRemote === "" || trimmedRemote === ".") {
         return root;

@@ -15,7 +15,7 @@ importers:
         specifier: ^6.12.1
         version: 6.12.1
       '@codemirror/search':
-        specifier: ^6.6.0
+        specifier: ^6.7.0
         version: 6.7.0
       '@codemirror/state':
         specifier: ^6.7.2
@@ -60,14 +60,14 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0
       svelte:
-        specifier: ^5.55.5
+        specifier: ^5.56.2
         version: 5.56.2(@typescript-eslint/types@8.60.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.4
         version: 9.39.4
       '@playwright/test':
-        specifier: ^1.59.1
+        specifier: ^1.60.0
         version: 1.60.0
       '@semantic-release/exec':
         specifier: ^7.1.0
@@ -85,13 +85,13 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2
       '@types/node':
-        specifier: ^25.6.0
+        specifier: ^25.9.2
         version: 25.9.2
       '@typescript-eslint/parser':
         specifier: 8.68.0
         version: 8.68.0(eslint@10.4.1(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
       '@vitest/coverage-v8':
-        specifier: ^4.1.4
+        specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
       conventional-changelog-conventionalcommits:
         specifier: ^10.2.1
@@ -103,22 +103,22 @@ importers:
         specifier: ^0.8.2
         version: 0.8.2(esbuild@0.28.0)(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       eslint:
-        specifier: ^10.2.1
+        specifier: ^10.4.1
         version: 10.4.1(supports-color@9.4.0)
       eslint-plugin-svelte:
-        specifier: ^3.17.0
+        specifier: ^3.19.0
         version: 3.19.0(eslint@10.4.1(supports-color@9.4.0))(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       moment:
         specifier: ^2.30.1
         version: 2.30.1
       obsidian:
-        specifier: ^1.12.3
+        specifier: ^1.13.0
         version: 1.13.0(@codemirror/state@6.7.2)(@codemirror/view@6.43.9)
       prettier:
         specifier: 3.8.3
         version: 3.8.3
       prettier-plugin-svelte:
-        specifier: ^3.5.1
+        specifier: ^3.5.2
         version: 3.5.2(prettier@3.8.3)(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       scss:
         specifier: ^0.2.4
@@ -127,13 +127,13 @@ importers:
         specifier: ^25.0.9
         version: 25.0.9(supports-color@9.4.0)(typescript@5.9.3)
       svelte-check:
-        specifier: ^4.4.6
+        specifier: ^4.6.0
         version: 4.6.0(picomatch@4.0.4)(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@5.9.3)
       svelte-eslint-parser:
         specifier: ^1.8.1
         version: 1.8.1(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       svelte-preprocess:
-        specifier: ^6.0.3
+        specifier: ^6.0.5
         version: 6.0.5(postcss-load-config@3.1.4(postcss@8.5.15))(postcss@8.5.15)(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@5.9.3)
       tslib:
         specifier: ^2.8.1
@@ -142,10 +142,10 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.58.2
+        specifier: ^8.60.1
         version: 8.60.1(eslint@10.4.1(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
       vitest:
-        specifier: ^4.1.4
+        specifier: ^4.1.8
         version: 4.1.8(@types/node@25.9.2)(@vitest/coverage-v8@4.1.8)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0))
 
 packages:

@@ -177,3 +177,24 @@ Extends Obsidian's `Modal`. Iterates through `conflicts[]`, renders a side-by-si
 ## Adding a New Sync Backend
 
 See [dev/SyncProvider.md](dev/SyncProvider.md) for a step-by-step guide to implementing the `SyncProvider` interface and wiring it into the plugin.
+
+---
+
+## Trust boundaries and path safety
+
+API sync reads filenames from external forge responses. Treat those names as
+untrusted input: `toVaultScopedPath` in `src/syncProvider/pathScope.ts` rejects
+parent-directory traversal, absolute paths, Windows drive paths, backslashes,
+and NUL bytes before converting a remote filename to a vault-relative path.
+The inverse conversion also rejects parent traversal; scoped paths must remain
+within the user-selected tracked directory. Do not bypass these helpers when
+adding new provider implementations.
+
+Provider credentials and encryption passphrases belong in Obsidian's secret
+storage; never log them, include them in sync audit payloads, or serialize them
+into sync manifests. A selected remote/branch must be checked against the
+stored repository fingerprint before applying a remote baseline.
+
+GitHub and GitLab support atomic multi-file remote writes; Gitea/Forgejo uses
+per-file writes and can leave a partially applied remote change when a request
+fails. Preserve these semantics when designing retries and conflict handling.

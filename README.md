@@ -329,7 +329,7 @@ Key modules are organized around a `SyncProvider` interface that abstracts the s
 
 ## Contributing
 
-Contributions welcome. For larger changes, open an issue to discuss the approach first.
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the reproducible toolchain, verification commands, provider architecture, and security boundaries. For larger changes, open an issue to discuss the approach first.
 
 ```bash
 # Clone and set up

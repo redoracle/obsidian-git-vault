@@ -78,3 +78,55 @@ describe("toVaultScopedPath", () => {
         expect(toVaultScopedPath("", "notes")).toBe("notes");
     });
 });
+
+describe("path safety at the API sync boundary", () => {
+    it("rejects traversal in configured tracked directories", () => {
+        expect(() => normalizeTrackedDirectory("notes/../private")).toThrow(
+            /parent traversal/
+        );
+        expect(() => normalizeTrackedDirectory("notes\\..\\private")).toThrow(
+            /parent traversal/
+        );
+    });
+
+    it("rejects traversal in locally supplied vault paths", () => {
+        expect(() => toRemoteScopedPath("notes/../secret.md", "notes")).toThrow(
+            /parent traversal/
+        );
+    });
+
+    it("rejects parent traversal from remote names at any scope", () => {
+        for (const remotePath of [
+            "../secret.md",
+            "notes/../../secret.md",
+            "folder\\..\\secret.md",
+        ]) {
+            expect(() => toVaultScopedPath(remotePath, "notes")).toThrow(
+                /Invalid remote path/
+            );
+            expect(() => toVaultScopedPath(remotePath, "")).toThrow(
+                /Invalid remote path/
+            );
+        }
+    });
+
+    it("rejects rooted, Windows and NUL-containing remote paths", () => {
+        for (const remotePath of [
+            "/etc/passwd",
+            "C:/Windows/file.md",
+            "\\\\server\\share",
+            "notes/unsafe\0.md",
+        ]) {
+            expect(() => toVaultScopedPath(remotePath, "notes")).toThrow(
+                /Invalid remote path/
+            );
+        }
+    });
+
+    it("preserves valid relative paths and hidden files", () => {
+        expect(toVaultScopedPath(".obsidian/config.json", "notes")).toBe(
+            "notes/.obsidian/config.json"
+        );
+        expect(toVaultScopedPath("folder/note.md", "")).toBe("folder/note.md");
+    });
+});
