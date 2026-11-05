@@ -40,7 +40,9 @@ describe("syncAuditLog credential redaction", () => {
                 githubToken: "ghp_topsecret",
                 headers: { Authorization: "Bearer abc123" },
                 details: ["https://example.com?access_token=abc123"],
-                error: new Error("fetch failed: https://user:password@example.com/repo"),
+                error: new Error(
+                    "fetch failed: https://user:password@example.com/repo"
+                ),
             },
         });
         const serialized = JSON.stringify(logger.log.mock.calls[0][0]);

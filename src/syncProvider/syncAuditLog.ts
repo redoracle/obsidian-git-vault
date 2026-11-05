@@ -1,4 +1,7 @@
-import { isSensitiveAuditKey, redactSensitiveText } from "../security/logRedaction";
+import {
+    isSensitiveAuditKey,
+    redactSensitiveText,
+} from "../security/logRedaction";
 
 export type SyncAuditPayload = Record<string, unknown>;
 
