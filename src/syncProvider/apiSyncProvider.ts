@@ -50,8 +50,7 @@ type LocalFileEntry = {
 };
 
 type RemoteContentResult =
-    | { ok: true; content: string | Uint8Array }
-    | { ok: false; error: unknown };
+    { ok: true; content: string | Uint8Array } | { ok: false; error: unknown };
 
 type RemoteComparisonResult =
     | { ok: true; equal: boolean; remoteContent?: string | Uint8Array }

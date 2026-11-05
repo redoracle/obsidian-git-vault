@@ -525,8 +525,7 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                                   ? `Warning: authenticated GitHub login is missing; proceeding using owner="${owner}" for repo creation.`
                                   : `Warning: authenticated GitHub login "${login}" differs from requested owner "${owner}"; proceeding using owner for repo creation.`;
                         const logger = this.concretePlugin?.logger as
-                            | Record<string, unknown>
-                            | undefined;
+                            Record<string, unknown> | undefined;
                         if (logger && typeof logger.warn === "function") {
                             (logger.warn as (...args: unknown[]) => void)(msg);
                         } else if (

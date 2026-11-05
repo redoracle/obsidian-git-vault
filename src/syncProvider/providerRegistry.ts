@@ -74,9 +74,7 @@ export interface ProviderDescriptor extends SyncProviderCapabilities {
      *   an opaque numeric project ID.
      */
     readonly remoteFileUrlMode:
-        | "unsupported"
-        | "supported"
-        | "requires-namespace-path";
+        "unsupported" | "supported" | "requires-namespace-path";
 
     /**
      * Bootstrap strategy taken when the local vault has no matching fingerprint

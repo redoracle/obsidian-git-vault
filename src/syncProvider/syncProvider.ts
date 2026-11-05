@@ -103,10 +103,7 @@ export interface SyncFileMetadata {
      * subtle hint (e.g. "passphrase required" or "passphrase mismatched").
      */
     encryptionProblem?:
-        | "passphrase-required"
-        | "passphrase-mismatched"
-        | "other"
-        | null;
+        "passphrase-required" | "passphrase-mismatched" | "other" | null;
     remoteUrl?: string;
     remoteHistoryUrl?: string;
 }

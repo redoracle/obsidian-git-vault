@@ -265,10 +265,7 @@ export type SyncUXMode = "simple" | "advanced";
 
 /** Conflict auto-resolution strategy. */
 export type ConflictResolutionStrategySetting =
-    | "last-write-wins"
-    | "always-local"
-    | "always-remote"
-    | "manual";
+    "last-write-wins" | "always-local" | "always-remote" | "manual";
 
 export interface Author {
     name: string;
