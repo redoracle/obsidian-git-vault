@@ -122,6 +122,9 @@ jobs:
             - name: Install isolated screenshot-harness dependencies
               working-directory: screenshots
               run: npm ci --ignore-scripts
+            - name: Audit screenshot development dependencies
+              working-directory: screenshots
+              run: npm audit --audit-level high
             - name: Type-check screenshot generator
               working-directory: screenshots
               run: npm run typecheck
