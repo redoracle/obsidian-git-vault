@@ -53,3 +53,20 @@ extractions are preferred to a large rewrite of the sync engine.
 
 The README and architecture overview are preserved rather than rewritten
 unnecessarily; their user-facing content is the maintained documentation.
+
+## Repository administration follow-ups
+
+These settings require a repository administrator and are not applied by
+source-control files alone:
+
+- Protect `main` with required passing CI checks, a pull-request review
+  policy, and restrictions on force-pushes.
+- Enable private vulnerability reporting and Dependabot security alerts.
+- Consider GitHub code scanning and secret scanning where available.
+- Require review for release-workflow or Git backend changes, and test the
+  packaged plugin manually on desktop and mobile before publishing.
+
+The compatible dependency sweep refreshed 23 top-level resolved packages
+from the first audit's lockfile; the security and architecture changes are
+verified through the checked-in CI workflow. Breaking major upgrades remain
+separate review work.

@@ -28,3 +28,14 @@ describe("logRedaction", () => {
         expect(isSensitiveAuditKey("branch")).toBe(false);
     });
 });
+
+describe("native forge authorization header redaction", () => {
+    it("removes Gitea token-style and GitLab private-token header values", () => {
+        const message =
+            "Authorization: token gitea-secret123 PRIVATE-TOKEN: glpat-secret456";
+        const safe = redactSensitiveText(message);
+        expect(safe).not.toContain("gitea-secret123");
+        expect(safe).not.toContain("glpat-secret456");
+        expect(safe).toContain("[REDACTED]");
+    });
+});

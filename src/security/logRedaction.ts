@@ -14,6 +14,10 @@ export function redactSensitiveText(text: string): string {
             "$1[REDACTED]"
         )
         .replace(
+            /(\bauthorization\s*[:=]\s*)(?:token|bearer|basic)\s+\S+/gi,
+            "$1[REDACTED]"
+        )
+        .replace(
             /(\b(?:authorization|private-token|x-api-key)\s*[:=]\s*)(?!\[REDACTED\])\S+/gi,
             "$1[REDACTED]"
         );
