@@ -4,7 +4,7 @@ import { normalizePath, Platform } from "obsidian";
 import * as path from "path";
 import { resolve, sep } from "path";
 import type * as simple from "simple-git";
-import simpleGit, { GitError, CleanOptions } from "simple-git";
+import { simpleGit, GitError, CleanOptions } from "simple-git";
 import {
     DEFAULT_WIN_GIT_PATH,
     GIT_LINE_AUTHORING_MOVEMENT_DETECTION_MINIMAL_LENGTH,
