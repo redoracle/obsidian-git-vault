@@ -29,7 +29,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
       - name: Format new and touched TypeScript files
         run: |
-          pnpm exec prettier --write src/utils.ts src/security/logRedaction.ts src/syncProvider/syncAuditLog.ts src/setting/infra/githubApiClient.ts src/setting/infra/githubPagination.ts src/gitManager/simpleGit.ts tests/unit/syncAuditLog.test.ts tests/unit/logRedaction.test.ts tests/unit/githubApiClient.test.ts tests/unit/githubPagination.test.ts
+          pnpm exec prettier --write src/utils.ts src/security/logRedaction.ts src/syncProvider/syncAuditLog.ts src/setting/infra/githubApiClient.ts src/setting/infra/githubPagination.ts src/gitManager/simpleGit.ts src/gitManager/gitEnvironment.ts src/setting/infra/gitlabApiClient.ts src/setting/infra/giteaApiClient.ts tests/unit/gitEnvironment.test.ts tests/unit/syncAuditLog.test.ts tests/unit/logRedaction.test.ts tests/unit/githubApiClient.test.ts tests/unit/githubPagination.test.ts
       - name: Verify upgraded dependencies
         run: |
           pnpm run tsc
@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json pnpm-lock.yaml src/utils.ts src/security/logRedaction.ts src/syncProvider/syncAuditLog.ts src/setting/infra/githubApiClient.ts src/setting/infra/githubPagination.ts src/gitManager/simpleGit.ts tests/unit/syncAuditLog.test.ts tests/unit/logRedaction.test.ts tests/unit/githubApiClient.test.ts tests/unit/githubPagination.test.ts
+          git add package.json pnpm-lock.yaml src/gitManager/gitEnvironment.ts src/setting/infra/gitlabApiClient.ts src/setting/infra/giteaApiClient.ts tests/unit/gitEnvironment.test.ts src/utils.ts src/security/logRedaction.ts src/syncProvider/syncAuditLog.ts src/setting/infra/githubApiClient.ts src/setting/infra/githubPagination.ts src/gitManager/simpleGit.ts tests/unit/syncAuditLog.test.ts tests/unit/logRedaction.test.ts tests/unit/githubApiClient.test.ts tests/unit/githubPagination.test.ts
           if git diff --cached --quiet; then
             echo 'No generated changes'
             exit 0
