@@ -28,6 +28,8 @@ jobs:
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Verify frozen root lockfile
         run: pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
+      - name: Apply Prettier 3.9 source formatting
+        run: pnpm exec prettier --write src
       - name: Verify root quality gates
         run: |
           pnpm run tsc
@@ -41,7 +43,7 @@ jobs:
       - name: Commit verified dependency lockfiles
         run: |
           set -euo pipefail
-          git add pnpm-lock.yaml screenshots/package-lock.json
+          git add pnpm-lock.yaml screenshots/package-lock.json src
           if git diff --cached --quiet; then
             echo 'Lockfiles already synchronized'
             exit 0
