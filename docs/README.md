@@ -35,6 +35,10 @@ Use this directory as the maintained documentation source for Obsidian Git Vault
 | Selective encryption design      | [dev/SelectiveEncryptionPolicy](dev/SelectiveEncryptionPolicy.md) |
 | Local plugin testing             | [Local Plugin Testing Guide](Local-Plugin-Testing-Guide.md)       |
 
+## Maintainer Audit
+
+- [Second architecture and security audit (November 2026)](dev/Second-Audit-2026-11.md)
+
 ## Repository Policies
 
 - [Contributing](../CONTRIBUTING.md)

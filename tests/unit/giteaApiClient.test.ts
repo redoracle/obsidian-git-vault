@@ -156,3 +156,24 @@ describe("GiteaForgeClient remote URLs", () => {
         );
     });
 });
+
+describe("GiteaApiClient redaction", () => {
+    beforeEach(() => vi.restoreAllMocks());
+
+    it("does not expose embedded URL credentials from thrown errors", async () => {
+        vi.spyOn(obsidian, "requestUrl").mockRejectedValueOnce(
+            new Error("Failed: https://alice:password@forge.example/repo")
+        );
+        const notify = vi.fn();
+        const client = new GiteaApiClient(
+            () => "https://forge.example",
+            () => "test-token",
+            notify
+        );
+
+        expect(await client.requestUser()).toBeNull();
+        const message = notify.mock.calls[0][0] as string;
+        expect(message).not.toContain("alice:password");
+        expect(message).toContain("[REDACTED]");
+    });
+});

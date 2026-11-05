@@ -290,7 +290,7 @@ Mobile defaults to an API backend and Simple Mode, but both can be changed in Se
 │       │                   │                     │
 └───────┼───────────────────┼─────────────────────┘
         ▼                   ▼
-   Git Remote          GitHub REST API
+   Git Remote          Forge REST APIs
 ```
 
 ## Key modules
