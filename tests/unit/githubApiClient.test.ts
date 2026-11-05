@@ -292,13 +292,11 @@ describe("GitHubApiClient pagination safety", () => {
 
     it("stops a repeated page link instead of looping indefinitely", async () => {
         const path = "/repos/alice/notes/branches";
-        const spy = vi
-            .spyOn(obsidian, "requestUrl")
-            .mockResolvedValueOnce(
-                fakeResponse(200, [{ name: "main" }], {
-                    link: "<https://api.github.com" + path + '>; rel="next"',
-                }) as never
-            );
+        const spy = vi.spyOn(obsidian, "requestUrl").mockResolvedValueOnce(
+            fakeResponse(200, [{ name: "main" }], {
+                link: "<https://api.github.com" + path + '>; rel="next"',
+            }) as never
+        );
         const notify = vi.fn();
         const result = await new GitHubApiClient(
             () => "token",
@@ -313,13 +311,11 @@ describe("GitHubApiClient pagination safety", () => {
     });
 
     it("rejects a foreign page without making a second request", async () => {
-        const spy = vi
-            .spyOn(obsidian, "requestUrl")
-            .mockResolvedValueOnce(
-                fakeResponse(200, [{ name: "main" }], {
-                    link: '<https://evil.example/steal>; rel="next"',
-                }) as never
-            );
+        const spy = vi.spyOn(obsidian, "requestUrl").mockResolvedValueOnce(
+            fakeResponse(200, [{ name: "main" }], {
+                link: '<https://evil.example/steal>; rel="next"',
+            }) as never
+        );
         const notify = vi.fn();
         const result = await new GitHubApiClient(
             () => "token",
