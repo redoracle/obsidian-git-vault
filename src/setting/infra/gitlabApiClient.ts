@@ -1,3 +1,4 @@
+import { redactSensitiveText } from "../../security/logRedaction";
 import { requestUrl, type RequestUrlParam } from "obsidian";
 import { buildBranchOptions } from "../settingsHelpers";
 
@@ -98,7 +99,7 @@ export class GitLabApiClient {
             return null;
         } catch (error) {
             this.showNotice(
-                `GitLab API request failed: ${error instanceof Error ? error.message : String(error)}`,
+                `GitLab API request failed: ${redactSensitiveText(error instanceof Error ? error.message : String(error))}`,
                 8000
             );
             return null;
@@ -219,7 +220,7 @@ export class GitLabApiClient {
                     );
                     console.error(
                         "GitLab createProject: unexpected empty response (status 201)",
-                        res
+                        res.status
                     );
                     return null;
                 }
@@ -244,7 +245,7 @@ export class GitLabApiClient {
                     );
                     console.error(
                         "GitLab createProject: missing fields in 201 response",
-                        json
+                        "missing project fields"
                     );
                     return null;
                 }
@@ -289,7 +290,7 @@ export class GitLabApiClient {
                     }
                 }
                 this.showNotice(
-                    `GitLab: Cannot create project — ${detail}`,
+                    `GitLab: Cannot create project — ${redactSensitiveText(detail)}`,
                     7000
                 );
                 return null;
@@ -328,10 +329,10 @@ export class GitLabApiClient {
                     }
                 }
                 this.showNotice(
-                    `GitLab: Project already exists — cannot create project '${identifier}'.`,
+                    `GitLab: Project already exists — cannot create project '${redactSensitiveText(identifier)}'.`,
                     6000
                 );
-                console.error("GitLab createProject: project exists", res.json);
+                console.error("GitLab createProject: project already exists");
                 return null;
             }
             this.showNotice(
@@ -357,7 +358,7 @@ export class GitLabApiClient {
                 errMsg = String(err);
             }
             this.showNotice(
-                `GitLab: Failed to create project — ${errMsg}`,
+                `GitLab: Failed to create project — ${redactSensitiveText(errMsg)}`,
                 6000
             );
             return null;

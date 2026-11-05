@@ -218,3 +218,15 @@ fails. Preserve these semantics when designing retries and conflict handling.
 
 Review [SECURITY.md](../SECURITY.md) and
 [CONTRIBUTING.md](../CONTRIBUTING.md) before modifying these boundaries.
+
+---
+
+## Native Git environment security
+
+The native Git backend constructs its subprocess environment through
+`src/gitManager/gitEnvironment.ts` rather than duplicating or overriding
+sensitive variable rules inside `SimpleGit`. Unsafe Git editor, pager,
+askpass, SSH command, and dynamic configuration variables are removed from
+the inherited environment and rejected from user-configured extra variables.
+The configured Git directory and ordinary environment variables remain
+supported. Path augmentation uses the platform-specific delimiter.

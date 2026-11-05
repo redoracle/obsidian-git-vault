@@ -111,7 +111,7 @@ export class GitHubApiClient {
             return null;
         } catch (err) {
             this.showNotice(
-                `GitHub API request failed: ${redactSensitiveText(err instanceof Error ? err.message : String(err))}`,
+                `GitHub API request failed: ${redactSensitiveText(redactSensitiveText(err instanceof Error ? err.message : String(err)))}`,
                 8000
             );
             return null;
@@ -257,7 +257,7 @@ export class GitHubApiClient {
                     );
                     console.error(
                         "GitHub createRepo: unexpected empty response (status 201)",
-                        res
+                        res.status
                     );
                     return null;
                 }
@@ -291,7 +291,7 @@ export class GitHubApiClient {
                     );
                     console.error(
                         "GitHub createRepo: unexpected response shape",
-                        json
+                        "missing repository fields"
                     );
                     return null;
                 }
@@ -320,7 +320,7 @@ export class GitHubApiClient {
                     json?.message ??
                     "Unknown error";
                 this.showNotice(
-                    `GitHub: Cannot create repository — ${detail}`,
+                    `GitHub: Cannot create repository — ${redactSensitiveText(detail)}`,
                     7000
                 );
                 return null;
@@ -350,7 +350,7 @@ export class GitHubApiClient {
             return null;
         } catch (err) {
             this.showNotice(
-                `GitHub: Failed to create repository — ${redactSensitiveText(err instanceof Error ? err.message : String(err))}`,
+                `GitHub: Failed to create repository — ${redactSensitiveText(redactSensitiveText(err instanceof Error ? err.message : String(err)))}`,
                 6000
             );
             return null;

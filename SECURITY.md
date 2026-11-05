@@ -31,3 +31,11 @@ when appropriate. A specific response or resolution deadline is not guaranteed.
 
 Before sharing diagnostics, remove private notes, tokens, authorization headers,
 credential-bearing URLs, and passphrases. See [SUPPORT.md](SUPPORT.md).
+
+### Native Git subprocess environment
+
+Git Vault removes unsafe inherited and user-configured Git environment
+variables such as `GIT_SSH_COMMAND`, `GIT_ASKPASS`, `GIT_CONFIG_COUNT`,
+and editor/pager overrides. Custom environment settings cannot bypass these
+restrictions. Use your operating system's Git Credential Manager or SSH
+agent rather than injecting custom askpass or SSH helper commands.

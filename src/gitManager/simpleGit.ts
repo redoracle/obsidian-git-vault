@@ -23,6 +23,7 @@ import type {
 import { CurrentGitAction, NoNetworkError } from "../types";
 import { impossibleBranch, spawnAsync, splitRemoteBranch } from "../utils";
 import { GitManager } from "./gitManager";
+import { createGitEnvironment } from "./gitEnvironment";
 
 export class SimpleGit extends GitManager {
     git!: simple.SimpleGit;
@@ -69,57 +70,12 @@ export class SimpleGit extends GitManager {
                     allowUnsafeCustomBinary: true,
                 },
             });
-            const pathPaths = this.plugin.localStorage.getPATHPaths();
-            const envVars = this.plugin.localStorage.getEnvVars();
-            const gitDir = this.plugin.settings.gitDir;
-            const envs = { ...process.env };
-            // simple-git (via @simple-git/argv-parser) blocks a set of env
-            // variables that could spawn interactive programs or modify git
-            // config in unsafe ways, unless the corresponding allowUnsafe*
-            // option is explicitly enabled.
-            //
-            // Since the plugin never needs interactive paging, editors, or
-            // askpass prompts – and because git does not invoke pagers or
-            // editors when stdout is a pipe (which it always is here) – the
-            // safest fix is to remove these keys from the inherited env
-            // rather than enabling the unsafe flags.
-            //
-            // Complete list sourced from @simple-git/argv-parser v1.1.x `y`
-            // map; add new entries here as simple-git adds more.
-            const SIMPLE_GIT_BLOCKED_ENV: ReadonlyArray<string> = [
-                "EDITOR",
-                "GIT_ASKPASS",
-                "GIT_CONFIG",
-                "GIT_CONFIG_COUNT",
-                "GIT_CONFIG_GLOBAL",
-                "GIT_CONFIG_SYSTEM",
-                "GIT_EDITOR",
-                "GIT_EXEC_PATH",
-                "GIT_EXTERNAL_DIFF",
-                "GIT_PAGER",
-                "GIT_PROXY_COMMAND",
-                "GIT_SEQUENCE_EDITOR",
-                "GIT_SSH",
-                "GIT_SSH_COMMAND",
-                "GIT_TEMPLATE_DIR",
-                "PAGER",
-                "PREFIX",
-                "SSH_ASKPASS",
-            ];
-            for (const key of SIMPLE_GIT_BLOCKED_ENV) {
-                delete envs[key];
-            }
-            if (pathPaths.length > 0) {
-                const path = pathPaths.join(":") + ":" + envs["PATH"];
-                envs["PATH"] = path;
-            }
-            if (gitDir) {
-                envs["GIT_DIR"] = gitDir;
-            }
-            for (const envVar of envVars) {
-                const [key, value] = envVar.split("=");
-                envs[key] = value;
-            }
+            const envs = createGitEnvironment(
+                process.env,
+                this.plugin.localStorage.getPATHPaths(),
+                this.plugin.localStorage.getEnvVars(),
+                this.plugin.settings.gitDir
+            );
 
             const SIMPLE_GIT_NAMESPACE = "simple-git";
             const NAMESPACE_SEPARATOR = ",";

@@ -1,3 +1,4 @@
+import { redactSensitiveText } from "../../security/logRedaction";
 import { requestUrl, type RequestUrlParam } from "obsidian";
 import type { CreateRepoResult } from "../sections/renderContext";
 import { buildBranchOptions, buildOptionsFromNames } from "../settingsHelpers";
@@ -105,7 +106,7 @@ export class GiteaApiClient {
             return null;
         } catch (error) {
             this.showNotice(
-                `Gitea API request failed: ${error instanceof Error ? error.message : String(error)}`,
+                `Gitea API request failed: ${redactSensitiveText(error instanceof Error ? error.message : String(error))}`,
                 8000
             );
             return null;
@@ -313,7 +314,7 @@ export class GiteaApiClient {
             return null;
         } catch (err) {
             this.showNotice(
-                `Gitea: Failed to create repository — ${err instanceof Error ? err.message : String(err)}`,
+                `Gitea: Failed to create repository — ${redactSensitiveText(err instanceof Error ? err.message : String(err))}`,
                 6000
             );
             return null;
