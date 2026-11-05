@@ -18,6 +18,10 @@ updates:
           - dependency-name: "supports-color"
             versions:
                 - ">=10.0.0"
+          # Match the Node 22 CI toolchain rather than future Node 26 APIs.
+          - dependency-name: "@types/node"
+            versions:
+                - ">=23.0.0"
 
     - package-ecosystem: "github-actions"
       directory: "/"

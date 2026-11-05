@@ -37,6 +37,8 @@ Use this directory as the maintained documentation source for Obsidian Git Vault
 
 ## Maintainer Audit
 
+- [Second-wave Dependabot compatibility audit (November 2026)](dev/Dependabot-Review-2026-11.md)
+
 - [Dependabot reconciliation and dependency compatibility (November 2026)](dev/Dependabot-Review-2026-11.md)
 
 - [Second architecture and security audit (November 2026)](dev/Second-Audit-2026-11.md)

@@ -42,7 +42,7 @@
     "moment": "^2.31.0",
     "obsidian": "^1.14.4",
     "prettier": "3.9.10",
-    "prettier-plugin-svelte": "^3.5.2",
+    "prettier-plugin-svelte": "^4.1.1",
     "scss": "^0.2.4",
     "semantic-release": "^25.0.9",
     "svelte-check": "^4.7.8",
@@ -68,7 +68,7 @@
     "diff2html": "^3.4.56",
     "diff3": "^0.0.4",
     "isomorphic-git": "^1.44.11",
-    "js-sha256": "^0.11.1",
+    "js-sha256": "^1.0.0",
     "simple-git": "^4.0.2",
     "supports-color": "^9.4.0",
     "svelte": "^5.57.3"

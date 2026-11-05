@@ -828,8 +828,7 @@
                     class="commit-msg-input"
                     spellcheck="true"
                     placeholder="Commit Message"
-                    bind:value={commitMessage}
-                ></textarea>
+                    bind:value={commitMessage}></textarea>
                 {#if commitMessage}
                     <div
                         class="git-commit-msg-clear-button"
