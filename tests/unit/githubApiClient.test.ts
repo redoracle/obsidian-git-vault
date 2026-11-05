@@ -286,3 +286,50 @@ describe("GitHubForgeClient remote URLs", () => {
         );
     });
 });
+
+describe("GitHubApiClient pagination safety", () => {
+    beforeEach(() => vi.restoreAllMocks());
+
+    it("stops a repeated page link instead of looping indefinitely", async () => {
+        const path = "/repos/alice/notes/branches";
+        const spy = vi.spyOn(obsidian, "requestUrl").mockResolvedValueOnce(
+            fakeResponse(
+                200,
+                [{ name: "main" }],
+                { link: "<https://api.github.com" + path + '>; rel="next"' }
+            ) as never
+        );
+        const notify = vi.fn();
+        const result = await new GitHubApiClient(() => "token", notify).fetchBranches(
+            "alice",
+            "notes"
+        );
+        expect(result).toEqual({ "": "No branches found" });
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(notify).toHaveBeenCalledWith(
+            expect.stringContaining("Pagination stopped"),
+            8000
+        );
+    });
+
+    it("rejects a foreign page without making a second request", async () => {
+        const spy = vi.spyOn(obsidian, "requestUrl").mockResolvedValueOnce(
+            fakeResponse(
+                200,
+                [{ name: "main" }],
+                { link: '<https://evil.example/steal>; rel="next"' }
+            ) as never
+        );
+        const notify = vi.fn();
+        const result = await new GitHubApiClient(() => "token", notify).fetchBranches(
+            "alice",
+            "notes"
+        );
+        expect(result).toEqual({ "": "No branches found" });
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(notify).toHaveBeenCalledWith(
+            expect.stringContaining("unsafe pagination"),
+            8000
+        );
+    });
+});
