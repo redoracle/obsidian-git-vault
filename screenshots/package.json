@@ -6,10 +6,15 @@
         "test": "playwright test",
         "screenshot": "playwright screenshot",
         "screenshot:headed": "playwright test --headed",
-        "install-browsers": "playwright install chromium"
+        "install-browsers": "playwright install chromium",
+        "typecheck": "tsc --noEmit -p tsconfig.json"
     },
     "devDependencies": {
         "@playwright/test": "^1.64.1",
-        "@types/node": "^20.19.39"
+        "@types/node": "^22.20.2",
+        "typescript": "5.9.3"
+    },
+    "engines": {
+        "node": ">=22 <23"
     }
 }
