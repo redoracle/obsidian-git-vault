@@ -18,6 +18,7 @@ body:
       attributes:
           label: Relevant errors (if available) from notifications or console (`CTRL+SHIFT+I`)
           description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+          description: Redact access tokens, authorization headers, private notes, and credential-bearing remote URLs before sharing.
           render: shell
     - type: textarea
       id: reproduce

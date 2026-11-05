@@ -1,4 +1,6 @@
 import { requestUrl } from "obsidian";
+import { redactSensitiveText } from "../../security/logRedaction";
+import { nextGitHubPagePath } from "./githubPagination";
 import type { RequestUrlParam } from "obsidian";
 import {
     buildBranchOptions,
@@ -109,34 +111,30 @@ export class GitHubApiClient {
             return null;
         } catch (err) {
             this.showNotice(
-                `GitHub API request failed: ${err instanceof Error ? err.message : String(err)}`,
+                `GitHub API request failed: ${redactSensitiveText(redactSensitiveText(err instanceof Error ? err.message : String(err)))}`,
                 8000
             );
             return null;
         }
     }
 
-    private parseNextPagePath(linkHeader: string): string | null {
-        for (const linkPart of linkHeader.split(",")) {
-            const match = linkPart.match(/<([^>]+)>;\s*rel="next"/);
-            if (!match) continue;
-            try {
-                const nextUrl = new URL(match[1]);
-                return `${nextUrl.pathname}${nextUrl.search}`;
-            } catch {
-                return null;
-            }
-        }
-        return null;
-    }
-
     private async requestAllPages<T = unknown>(
         path: string
     ): Promise<T[] | null> {
         const items: T[] = [];
+        const visited = new Set<string>();
+        const maxPages = 100;
         let nextPath: string | null = path;
 
         while (nextPath) {
+            if (visited.has(nextPath) || visited.size >= maxPages) {
+                this.showNotice(
+                    "GitHub API: Pagination stopped (repeated or excessive page link).",
+                    8000
+                );
+                return null;
+            }
+            visited.add(nextPath);
             const response = await this.requestWithResponse<T[]>(nextPath);
             if (!response || !Array.isArray(response.json)) {
                 return null;
@@ -146,8 +144,15 @@ export class GitHubApiClient {
             if (response.json.length === 0) {
                 break;
             }
-
-            nextPath = this.parseNextPagePath(response.headers.link ?? "");
+            try {
+                nextPath = nextGitHubPagePath(response.headers.link ?? "");
+            } catch {
+                this.showNotice(
+                    "GitHub API: Rejected an unsafe pagination link.",
+                    8000
+                );
+                return null;
+            }
         }
 
         return items;
@@ -252,7 +257,7 @@ export class GitHubApiClient {
                     );
                     console.error(
                         "GitHub createRepo: unexpected empty response (status 201)",
-                        res
+                        res.status
                     );
                     return null;
                 }
@@ -286,7 +291,7 @@ export class GitHubApiClient {
                     );
                     console.error(
                         "GitHub createRepo: unexpected response shape",
-                        json
+                        "missing repository fields"
                     );
                     return null;
                 }
@@ -315,7 +320,7 @@ export class GitHubApiClient {
                     json?.message ??
                     "Unknown error";
                 this.showNotice(
-                    `GitHub: Cannot create repository — ${detail}`,
+                    `GitHub: Cannot create repository — ${redactSensitiveText(detail)}`,
                     7000
                 );
                 return null;
@@ -345,7 +350,7 @@ export class GitHubApiClient {
             return null;
         } catch (err) {
             this.showNotice(
-                `GitHub: Failed to create repository — ${err instanceof Error ? err.message : String(err)}`,
+                `GitHub: Failed to create repository — ${redactSensitiveText(redactSensitiveText(err instanceof Error ? err.message : String(err)))}`,
                 6000
             );
             return null;

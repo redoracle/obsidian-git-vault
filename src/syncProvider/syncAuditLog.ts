@@ -1,3 +1,8 @@
+import {
+    isSensitiveAuditKey,
+    redactSensitiveText,
+} from "../security/logRedaction";
+
 export type SyncAuditPayload = Record<string, unknown>;
 
 export type AuditLogger = {
@@ -38,7 +43,13 @@ function isSyncAuditLogOptions(
 function serializePayload(payload: SyncAuditPayload): SyncAuditPayload {
     try {
         return JSON.parse(
-            JSON.stringify(payload, (_key, value: unknown) => {
+            JSON.stringify(payload, (key, value: unknown) => {
+                if (key && isSensitiveAuditKey(key)) {
+                    return "[REDACTED]";
+                }
+                if (typeof value === "string") {
+                    return redactSensitiveText(value);
+                }
                 if (value instanceof Error) {
                     return {
                         name: value.name,

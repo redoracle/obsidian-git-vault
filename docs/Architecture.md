@@ -198,3 +198,35 @@ stored repository fingerprint before applying a remote baseline.
 GitHub and GitLab support atomic multi-file remote writes; Gitea/Forgejo uses
 per-file writes and can leave a partially applied remote change when a request
 fails. Preserve these semantics when designing retries and conflict handling.
+
+---
+
+## Second-pass module boundaries and refactoring roadmap
+
+- `src/security/logRedaction.ts` defines pure credential redaction used by
+  audit logs and provider notices, avoiding Obsidian runtime dependencies.
+- `src/setting/infra/githubPagination.ts` parses and validates pagination
+  independently of the HTTP transport. The GitHub client limits pages and
+  rejects duplicate pages and foreign hosts.
+- `src/gitManager/simpleGit.ts` owns native Git, while
+  `src/gitManager/isomorphicGit.ts` owns the browser-compatible fallback.
+  Major dependency upgrades need regression tests for both paths.
+- `src/main.ts`, `src/syncProvider/apiSyncProvider.ts`, and
+  `src/setting/settings.ts` are still large orchestration boundaries.
+  Extract one responsibility at a time; do not rewrite provider contracts
+  or settings migration paths in a single breaking change.
+
+Review [SECURITY.md](../SECURITY.md) and
+[CONTRIBUTING.md](../CONTRIBUTING.md) before modifying these boundaries.
+
+---
+
+## Native Git environment security
+
+The native Git backend constructs its subprocess environment through
+`src/gitManager/gitEnvironment.ts` rather than duplicating or overriding
+sensitive variable rules inside `SimpleGit`. Unsafe Git editor, pager,
+askpass, SSH command, and dynamic configuration variables are removed from
+the inherited environment and rejected from user-configured extra variables.
+The configured Git directory and ordinary environment variables remain
+supported. Path augmentation uses the platform-specific delimiter.

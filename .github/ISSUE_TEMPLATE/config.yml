@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support and troubleshooting
+    url: https://github.com/redoracle/obsidian-git-vault/blob/main/SUPPORT.md
+    about: Consult setup guides and troubleshooting before filing a bug.
+  - name: Private security report
+    url: https://github.com/redoracle/obsidian-git-vault/security/advisories/new
+    about: Report suspected vulnerabilities privately.

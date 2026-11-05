@@ -155,3 +155,24 @@ describe("GitLabForgeClient remote URLs", () => {
         expect(client.getRemoteHistoryUrl("notes/example.md")).toBeUndefined();
     });
 });
+
+describe("GitLabApiClient redaction", () => {
+    beforeEach(() => vi.restoreAllMocks());
+
+    it("does not expose a bearer token from a thrown request error", async () => {
+        vi.spyOn(obsidian, "requestUrl").mockRejectedValueOnce(
+            new Error("Authorization: Bearer glpat-secret987")
+        );
+        const notify = vi.fn();
+        const client = new GitLabApiClient(
+            () => "https://gitlab.com/api/v4",
+            () => "test-token",
+            notify
+        );
+
+        expect(await client.requestUser()).toBeNull();
+        const message = notify.mock.calls[0][0] as string;
+        expect(message).not.toContain("glpat-secret987");
+        expect(message).toContain("[REDACTED]");
+    });
+});
