@@ -1,41 +1,33 @@
-# Dependabot reconciliation — November 2026
+# Dependabot: second wave and compatibility verification
 
-This document explains the decisions behind the consolidated dependency
-maintenance PR. Do not merge automatic major upgrades without checking the
-runtime and project contracts.
+After the first consolidated dependency PR (#40), Dependabot created four
+new major-version updates. The baseline root checks were green (478 tests),
+and the screenshot harness included 49 Chromium scenarios.
 
-## Open PR disposition at audit time
-
-| Bot PR | Dependency | Resolution |
+| Dependabot PR | Finding | Decision |
 | --- | --- | --- |
-| #38 | Screenshot harness @types/node 20 → 26 | Replace with Node 22 declarations matching its CI runtime |
-| #37 | Prettier 3.8 → 3.9 | Adopt 3.9.10 and verify repository formatting |
-| #34 | svelte-check 4.6 → 4.7.6 | Superseded: main already declares 4.7.8 or later |
-| #33 | supports-color 9 → 11 | Defer major; v11 requires Node 22 and Obsidian desktop runtime is not uniformly pinned to Node 22 |
-| #31 | Playwright 1.60 → 1.63 | Superseded: main already uses 1.64.1 |
-| #30 | esbuild-svelte 0.8 → 0.9 | Adopt 0.9.5, verified through Svelte check, tests and production build |
-| #22 | pnpm/action-setup 4 → 6 | Adopt v6 with pnpm 10.34.9 pinned |
-| #21 | actions/setup-node 4 → 7 | Adopt v7, keeping the build runtime at Node 22 |
-| #20 | actions/checkout 6 → 7 | Adopt v7 in test and release workflows |
+| #41 | Screenshot TypeScript 5.9.3 → 7.0.2 | Merged after 16/16 CI checks passed (isolated screenshot harness) |
+| #42 | Root @types/node 22 → 26 | Defer: Node 26 declarations do not match the supported Node 22 CI/runtime |
+| #43 | prettier-plugin-svelte 3.5.2 → 4.1.1 | Upgrade in consolidated PR, regenerate source formatting and validate build |
+| #44 | js-sha256 0.11.1 → 1.0.0 | Upgrade in consolidated PR with a type-level migration and SHA-256 regression vectors |
 
-## Runtime and lockfile policy
+## Hashing migration
 
-The root plugin has desktop and mobile execution contexts and is **not**
-equivalent to the Node.js version used to build it. CI uses Node.js 22,
-and development type definitions should describe Node 22 rather than an
-unrelated future Node 26 runtime. The screenshot generator is a separate
-npm package; its lockfile is maintained independently of the root pnpm
-lockfile.
+The \`js-sha256\` 1.0.0 package no longer exports the \`Hasher\` type.
+Use the derived \`ReturnType<typeof sha256.create>\` in
+\`src/editor/lineAuthor/model.ts\` rather than duplicating a library type.
+Keep incremental \`update\` calls and output digests stable; unit tests
+assert standard SHA-256 vectors and byte-array behavior.
 
-`supports-color@11` requires Node.js 22 and can be transitively exposed
-through debug and Git tooling. Keep major 9 until compatibility with
-supported Obsidian desktop runtimes is demonstrated. This is a conscious
-compatibility decision, **not** a known active security vulnerability.
+## Formatter migration
 
-Dependabot groups compatible dev-tool minor/patch updates, while root
-and screenshots ignore specified incompatible major versions. The
-screenshot harness has its own CI typecheck and Playwright/Chromium tests,
-which were absent from the previous root-only checks.
+The Svelte Prettier plugin v4 supports the Svelte 5 toolchain but changes
+formatting. Apply \`prettier --write src\` once, commit only deterministic
+formatting changes, and preserve \`pnpm run format\` as a required check.
 
-Review major-version changes separately, rerun root and screenshot
-quality gates, and do not rely on a bot's compatibility badge alone.
+## Remaining repository risks
+
+Desktop Obsidian and mobile plugin testing are not a substitute for CI and
+require a runtime smoke test. The root \`@types/node\` dependency is aligned
+with the Node 22 build environment, not to Node 26. The \`supports-color\`
+v11 major remains deferred pending runtime compatibility proof.
