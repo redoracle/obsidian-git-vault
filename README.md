@@ -328,6 +328,14 @@ Key modules are organized around a `SyncProvider` interface that abstracts the s
 
 ---
 
+## Engineering quality and operational readiness
+
+The [enterprise-readiness audit](docs/dev/Enterprise-Readiness-Audit-2026-11.md)
+documents verified flow-control remediations, workflow guarantees, and the
+remaining governance, cross-provider integration, accessibility and release
+provenance work. CI passing is not a substitute for real Obsidian desktop and
+mobile validation.
+
 ## Contributing
 
 Read the [contributing guide](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md),

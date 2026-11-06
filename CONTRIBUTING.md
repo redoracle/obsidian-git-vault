@@ -28,6 +28,8 @@ pnpm run lint
 pnpm run format
 pnpm run test
 pnpm run build
+pnpm run test:release-notes
+pnpm run test:release-metadata
 ```
 
 `make check` also checks formatting across source, configuration, and docs.
@@ -65,3 +67,13 @@ quality gates after either kind of change.
 
 Use conventional commits (`fix:`, `feat:`, `docs:`, `test:`, `chore:`).
 Releases are automated from `main`; do not edit release artifacts by hand.
+
+## Async flow-control contract
+
+The shared PromiseQueue owns FIFO execution. SyncManager is the sole queue owner
+for a full sync: never enqueue a second task from inside GitSyncProvider.sync.
+A queue clear during unload settles waiters without invoking completion hooks.
+Avoid scheduling timers, notices or state writes after plugin teardown.
+
+See [the enterprise-readiness audit](docs/dev/Enterprise-Readiness-Audit-2026-11.md)
+for remaining production and governance checks.
