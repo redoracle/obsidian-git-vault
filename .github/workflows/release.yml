@@ -43,6 +43,12 @@ jobs:
       - name: Verify types and lint
         run: pnpm run tsc && pnpm run svelte && pnpm run lint
 
+      - name: Verify release preparation and release-notes generator
+        run: |
+          test -x scripts/prepare-release.sh
+          bash -n scripts/prepare-release.sh
+          pnpm run test:release-notes
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

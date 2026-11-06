@@ -1,6 +1,6 @@
 /**
  * Integration tests — operate on real vault filesystem.
- * Vault path: /Users/tesla/Documents/obsidian-test-vault
+ * Vault path: configured via OBSIDIAN_TEST_VAULT environment variable
  *
  * These tests do NOT need Obsidian to be running.
  * They exercise the vault filesystem directly to verify that
