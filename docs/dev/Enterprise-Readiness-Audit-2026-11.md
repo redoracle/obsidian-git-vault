@@ -23,6 +23,17 @@ transaction risks; other risks below remain explicitly open.
 | Release | Semantic Release 1.1.2 was published and release-note compatibility is tested | Release metadata was written in three partial updates — now one Git commit, with transaction regression tests |
 | Documentation | README, security policy, contribution guide, provider architecture | Written guarantees must be separated from platform-validated ones |
 
+## Repository hygiene
+
+The local Makefile still advertised an obsolete standard-version release
+command even though package.json no longer defines a release script.
+The release target now runs reproducible release checks only; publishing
+remains controlled by GitHub Actions on main.
+
+A generated Playwright HTML report was mistakenly tracked in the repository
+despite an existing .gitignore rule. It has been removed from version control;
+future local report generation remains ignored.
+
 ## Verified code-level findings and changes
 
 ### Critical: native Git sync reentrancy
