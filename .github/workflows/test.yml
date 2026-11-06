@@ -103,6 +103,7 @@ jobs:
                   test -x scripts/prepare-release.sh
                   bash -n scripts/prepare-release.sh
                   pnpm run test:release-notes
+                  pnpm run test:release-metadata
     dependency-audit:
         runs-on: ubuntu-latest
         steps:
