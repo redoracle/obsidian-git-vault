@@ -98,6 +98,11 @@ jobs:
               run: pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild esbuild svelte-preprocess
             - name: Run unit and integration tests
               run: pnpm run test
+            - name: Verify release preparation and release-notes compatibility
+              run: |
+                  test -x scripts/prepare-release.sh
+                  bash -n scripts/prepare-release.sh
+                  pnpm run test:release-notes
     dependency-audit:
         runs-on: ubuntu-latest
         steps:

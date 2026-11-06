@@ -22,6 +22,10 @@ updates:
           - dependency-name: "@types/node"
             versions:
                 - ">=23.0.0"
+          # semantic-release 25 uses conventional-changelog-writer@8; preset v10 requires writer@9.
+          - dependency-name: "conventional-changelog-conventionalcommits"
+            versions:
+                - ">=10.0.0"
 
     - package-ecosystem: "github-actions"
       directory: "/"
