@@ -145,9 +145,12 @@ export class GitSyncProvider implements SyncProvider {
                     localContent: "",
                     remoteContent: "",
                 })),
-                message: conflicts.length > 0
-                    ? "Sync completed with " + conflicts.length + " conflict(s)"
-                    : "Sync completed successfully",
+                message:
+                    conflicts.length > 0
+                        ? "Sync completed with " +
+                          conflicts.length +
+                          " conflict(s)"
+                        : "Sync completed successfully",
                 success: conflicts.length === 0,
             };
         } catch (error) {
@@ -155,9 +158,10 @@ export class GitSyncProvider implements SyncProvider {
             return {
                 filesChanged: 0,
                 conflicts: [],
-                message: error instanceof Error
-                    ? error.message
-                    : "Sync completed but git status refresh failed",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Sync completed but git status refresh failed",
                 success: false,
             };
         }

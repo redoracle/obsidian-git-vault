@@ -101,7 +101,9 @@
     function triggerSync() {
         if (state.isSyncing || !state.providerReady) {
             auditUi("click.sync-ignored", {
-                reason: state.isSyncing ? "already-syncing" : "provider-not-ready",
+                reason: state.isSyncing
+                    ? "already-syncing"
+                    : "provider-not-ready",
             });
             return;
         }
@@ -126,7 +128,12 @@
         <span class="git-vault-provider-badge">{providerLabel}</span>
     </div>
 
-    <div class="git-vault-status {statusClass}" role="status" aria-live="polite" aria-atomic="true">
+    <div
+        class="git-vault-status {statusClass}"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+    >
         <span class="git-vault-status-dot"></span>
         <span class="git-vault-status-text">{statusLabel}</span>
     </div>
