@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:release-notes": "node scripts/check-release-notes.mjs"
+    "test:release-notes": "node scripts/check-release-notes.mjs",
+    "test:release-metadata": "node scripts/check-release-metadata.mjs"
   },
   "keywords": [],
   "author": "RedOracle",

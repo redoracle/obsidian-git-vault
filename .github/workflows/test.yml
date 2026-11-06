@@ -3,6 +3,11 @@ name: test
 permissions:
     contents: read
 
+# Cancel obsolete test runs after a newer push to the same ref.
+concurrency:
+    group: test-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 on:
     workflow_dispatch:
     push:
@@ -10,8 +15,11 @@ on:
 jobs:
     svelte-check:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -25,8 +33,11 @@ jobs:
               run: pnpm run svelte
     lint:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -40,8 +51,11 @@ jobs:
               run: pnpm run lint
     format:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -55,8 +69,11 @@ jobs:
               run: pnpm run format
     compile:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -70,8 +87,11 @@ jobs:
               run: pnpm run tsc --noEmit
     build:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -85,8 +105,11 @@ jobs:
               run: pnpm run build
     unit-tests:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -103,10 +126,14 @@ jobs:
                   test -x scripts/prepare-release.sh
                   bash -n scripts/prepare-release.sh
                   pnpm run test:release-notes
+                  pnpm run test:release-metadata
     dependency-audit:
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: pnpm/action-setup@v6
               with:
                   version: 10.34.9
@@ -117,8 +144,11 @@ jobs:
               run: pnpm audit --prod --audit-level high
     screenshot-harness:
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
             - uses: actions/setup-node@v7
               with:
                   node-version: 22

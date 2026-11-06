@@ -81,7 +81,7 @@ Adapts the existing `GitManager` abstraction (which wraps either `simple-git` or
 
 Key behaviour:
 
--   `sync()` enqueues a task on `plugin.promiseQueue` and resolves when `commitAndSync` completes
+-   `sync()` executes inside the outer `SyncManager` queue task and **must not enqueue onto the same queue** (this would cause a self-deadlock); it runs `commitAndSync` and refreshes status.
 -   `resolveConflicts()` stages or discards files per resolution strategy
 -   `getStatus()` delegates to `gitManager.status()`
 

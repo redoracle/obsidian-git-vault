@@ -67,6 +67,7 @@
             return "All notes are up to date";
         }
         if (state.lastError) return `Error: ${state.lastError}`;
+        if (!state.providerReady) return "Preparing sync provider…";
         if (!state.isOnline)
             return "Offline – changes will sync when reconnected";
         if (state.pendingChanges.length > 0)
@@ -79,6 +80,7 @@
         if (state.conflicts.length > 0) return "status-conflict";
         if (state.lastErrorCode === "ALREADY_EXISTS") return "status-ok";
         if (state.lastError) return "status-error";
+        if (!state.providerReady) return "status-syncing";
         if (!state.isOnline) return "status-offline";
         return "status-ok";
     })();
@@ -97,9 +99,11 @@
     // ── Actions ──────────────────────────────────────────────────────────
 
     function triggerSync() {
-        if (state.isSyncing) {
+        if (state.isSyncing || !state.providerReady) {
             auditUi("click.sync-ignored", {
-                reason: "already-syncing",
+                reason: state.isSyncing
+                    ? "already-syncing"
+                    : "provider-not-ready",
             });
             return;
         }
@@ -118,20 +122,26 @@
     }
 </script>
 
-<div class="git-vault-simple">
+<div class="git-vault-simple" aria-busy={state.isSyncing}>
     <div class="git-vault-header">
         <span class="git-vault-title">Obsidian Git Vault</span>
         <span class="git-vault-provider-badge">{providerLabel}</span>
     </div>
 
-    <div class="git-vault-status {statusClass}">
+    <div
+        class="git-vault-status {statusClass}"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+    >
         <span class="git-vault-status-dot"></span>
         <span class="git-vault-status-text">{statusLabel}</span>
     </div>
 
     <button
         class="git-vault-sync-btn mod-cta"
-        disabled={state.isSyncing}
+        disabled={state.isSyncing || !state.providerReady}
+        aria-label={state.isSyncing ? "Syncing notes" : "Sync notes now"}
         on:click={triggerSync}
     >
         {syncButtonLabel}

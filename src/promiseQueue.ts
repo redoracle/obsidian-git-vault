@@ -1,97 +1,114 @@
 import type ObsidianGit from "./main";
 
-/**
- * Controls how `PromiseQueue` handles a task error.
- *
- * - `"report"` (default) — the queue calls `plugin.displayError()` and then
- *   invokes `onFinished(undefined)`.  Use this for top-level commands that do
- *   not catch their own errors.
- * - `"swallow"` — the error is logged at debug level and then discarded after
- *   `onFinished(undefined)` is called. Use this for tasks that perform their
- *   own error reporting (e.g. `commit`, automatic tasks) to avoid showing two
- *   toast notifications for the same failure.
- */
 export type TaskErrorPolicy = "report" | "swallow";
 
+interface QueuedTask {
+    task: () => Promise<unknown>;
+    finish: (result: unknown, cancelled?: boolean) => void;
+    onError: TaskErrorPolicy;
+}
+
+/**
+ * A single-owner FIFO execution queue.
+ *
+ * Only the queue advances the active task. Clearing settles all waiters,
+ * prevents new work, and never starts a pending task. An already-running
+ * asynchronous operation cannot be force-cancelled; owners must cooperate
+ * with teardown where side effects are possible.
+ */
 export class PromiseQueue {
-    private tasks: {
-        task: () => Promise<unknown>;
-        onFinished: (res: unknown) => void;
-        onError: TaskErrorPolicy;
-    }[] = [];
+    private readonly tasks: QueuedTask[] = [];
+    private activeTask: QueuedTask | undefined;
+    private stopped = false;
 
     constructor(private readonly plugin: ObsidianGit) {}
 
     /**
-     * Add a task to the queue.
-     *
-     * @param task The task to add.
-     * @param onFinished A callback that is called when the task is finished. Both on success and on error.
-     * @param onError Error reporting policy. Defaults to `"report"` (queue
-     *   displays the error). Pass `"swallow"` when the task handles its own
-     *   error display to prevent duplicate toast notifications.
+     * Returns the result, or undefined on failure/cancellation.
+     * onFinished runs only after execution, not on teardown cancellation;
+     * cancellation must not re-arm automatic timers or invoke UI callbacks.
      */
     addTask<T>(
         task: () => Promise<T>,
         onFinished?: (res: T | undefined) => void,
         onError: TaskErrorPolicy = "report"
     ): Promise<T | undefined> {
+        if (this.stopped) return Promise.resolve(undefined);
+
         return new Promise<T | undefined>((resolve) => {
-            this.tasks.push({
-                task: () => task(),
-                onFinished: (res: unknown) => {
-                    try {
-                        onFinished?.(res as T | undefined);
-                    } catch (e) {
-                        console.error(
-                            "%s: onFinished handler threw an error",
-                            this.plugin.manifest.id,
-                            e
-                        );
-                    } finally {
-                        resolve(res as T | undefined);
-                    }
-                },
+            let settled = false;
+            const item: QueuedTask = {
+                task,
                 onError,
-            });
-            if (this.tasks.length === 1) {
-                this.handleTask();
-            }
+                finish: (result: unknown, cancelled = false) => {
+                    if (settled) return;
+                    settled = true;
+                    if (!cancelled) {
+                        try {
+                            onFinished?.(result as T | undefined);
+                        } catch (error) {
+                            console.error(
+                                "%s: onFinished handler threw an error",
+                                this.plugin.manifest.id,
+                                error
+                            );
+                        }
+                    }
+                    resolve(result as T | undefined);
+                },
+            };
+            this.tasks.push(item);
+            this.startNext();
         });
     }
 
-    private handleTask(): void {
-        if (this.tasks.length > 0) {
-            const item = this.tasks[0];
-            // Ensure synchronous throws from the task are converted to a
-            // rejected promise so they are handled uniformly.
-            Promise.resolve()
-                .then(() => item.task())
-                .then(
-                    (res) => {
-                        item.onFinished(res);
-                        this.tasks.shift();
-                        this.handleTask();
-                    },
-                    (e) => {
-                        if (item.onError === "report") {
-                            this.plugin.displayError(e);
-                        } else {
-                            console.debug(
-                                "%s: swallowed queue task error",
-                                this.plugin.manifest.id,
-                                e
-                            );
-                        }
-                        item.onFinished(undefined);
-                        this.tasks.shift();
-                        this.handleTask();
+    private startNext(): void {
+        if (this.stopped || this.activeTask) return;
+        const item = this.tasks.shift();
+        if (!item) return;
+        this.activeTask = item;
+        void this.execute(item);
+    }
+
+    private async execute(item: QueuedTask): Promise<void> {
+        let result: unknown = undefined;
+        try {
+            result = await item.task();
+        } catch (error) {
+            if (!this.stopped) {
+                try {
+                    if (item.onError === "report") {
+                        this.plugin.displayError(error);
+                    } else {
+                        console.debug(
+                            "%s: swallowed queue task error",
+                            this.plugin.manifest.id,
+                            error
+                        );
                     }
-                );
+                } catch (reportError) {
+                    // Error reporting must never strand the queue.
+                    console.error(
+                        "%s: queue error reporter threw",
+                        this.plugin.manifest.id,
+                        reportError
+                    );
+                }
+            }
+        } finally {
+            item.finish(result);
+            if (this.activeTask === item) this.activeTask = undefined;
+            this.startNext();
         }
     }
 
+    /** Terminal shutdown; cannot cancel the underlying active operation. */
     clear(): void {
-        this.tasks = [];
+        if (this.stopped) return;
+        this.stopped = true;
+        this.activeTask?.finish(undefined, true);
+        for (const item of this.tasks.splice(0)) {
+            item.finish(undefined, true);
+        }
     }
 }
