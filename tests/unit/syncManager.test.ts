@@ -445,3 +445,23 @@ describe("SyncManager notices", () => {
         expect(plugin.isBranchSwitchInProgress).toBe(false);
     });
 });
+
+describe("SyncManager event trigger coalescing", () => {
+    it("queues one sync for multiple triggers until the task completes", async () => {
+        const plugin = createPlugin();
+        const tasks: Array<{ task: () => Promise<void>; done?: () => void }> = [];
+        plugin.promiseQueue.addTask = vi.fn(async (task, done) => { tasks.push({ task, done }); });
+        const manager = new SyncManager(plugin as never);
+        manager.triggerSync("file-change");
+        manager.triggerSync("network-reconnect");
+        expect(plugin.promiseQueue.addTask).toHaveBeenCalledTimes(1);
+        const provider = { sync: vi.fn(async () => ({
+            success: true, filesChanged: 0, conflicts: [], message: "ok",
+        })) };
+        (manager as unknown as { provider: typeof provider }).provider = provider;
+        await tasks[0].task();
+        tasks[0].done?.();
+        manager.triggerSync("manual");
+        expect(plugin.promiseQueue.addTask).toHaveBeenCalledTimes(2);
+    });
+});

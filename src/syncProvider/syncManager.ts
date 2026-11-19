@@ -73,6 +73,7 @@ export class SyncManager {
     private conflictHistory: ConflictHistoryManager;
     private compiledExcludePatterns = compileExcludePatterns([]);
     private cachedBranchSelections = new Map<string, SyncBranchSelection>();
+    private syncQueued = false;
 
     constructor(private readonly plugin: ObsidianGit) {
         this.conflictHistory = new ConflictHistoryManager(plugin);
@@ -356,35 +357,28 @@ export class SyncManager {
      * Enqueues via PromiseQueue so concurrent calls are safely serialised.
      */
     triggerSync(reason: string = "manual"): void {
+        // Collapse rapid UI/file/network triggers while one sync is queued
+        // or executing. Other operations are still serialized by the queue.
+        if (this.syncQueued || this.state.getState().isSyncing) {
+            this.audit("sync.coalesced", { reason });
+            return;
+        }
+
+        this.syncQueued = true;
         this.audit("sync.enqueue", { reason });
-        void this.plugin.promiseQueue.addTask(async () => {
-            await this.runSync();
-        });
+        void this.plugin.promiseQueue.addTask(
+            () => this.runSync(),
+            () => {
+                this.syncQueued = false;
+            }
+        );
     }
 
     async syncNow(): Promise<void> {
         this.audit("sync.direct-requested");
-        return new Promise((resolve, reject) => {
-            try {
-                void this.plugin.promiseQueue.addTask(
-                    async () => {
-                        try {
-                            await this.runSync();
-                            resolve();
-                        } catch (err) {
-                            reject(
-                                err instanceof Error
-                                    ? err
-                                    : new Error(String(err))
-                            );
-                        }
-                    },
-                    () => resolve()
-                );
-            } catch (err) {
-                reject(err instanceof Error ? err : new Error(String(err)));
-            }
-        });
+        // Await queue settlement directly; a wrapper Promise would hang
+        // when plugin teardown discards a pending request.
+        await this.plugin.promiseQueue.addTask(() => this.runSync());
     }
 
     getCapabilities(): SyncProviderCapabilities {

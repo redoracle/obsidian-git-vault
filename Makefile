@@ -46,6 +46,7 @@ SCREENSHOTS_PACKAGE_FILES := screenshots/package.json screenshots/package-lock.j
 	check \
 	ci \
 	release \
+	release-check \
 	package-dir \
 	package \
 	artifacts \
@@ -128,8 +129,12 @@ check: $(TSC_BIN) $(SVELTE_CHECK_BIN) $(PRETTIER_BIN) $(ESLINT_BIN) ## Run the f
 
 ci: install-frozen check build ## Reproduce the local CI path: install, verify, build
 
-release: $(ROOT_NODE_MODULES) ## Run standard-version to update changelog and create a release tag
-	$(PNPM) run release
+release: release-check ## Validate locally; publishing is managed by GitHub Actions from main
+	@echo "Release checks passed. Publishing happens in the protected GitHub Actions Release workflow."
+
+release-check: $(ROOT_NODE_MODULES) ## Verify release notes and transactional metadata synchronization
+	$(PNPM) run test:release-notes
+	$(PNPM) run test:release-metadata
 
 # Playwright test runner with category support
 # Usage:

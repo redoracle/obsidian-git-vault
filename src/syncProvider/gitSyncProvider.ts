@@ -110,92 +110,61 @@ export class GitSyncProvider implements SyncProvider {
         }
     }
 
+    /**
+     * SyncManager already serializes this operation with the shared queue.
+     * Never enqueue a second task here: doing so deadlocks the outer sync.
+     */
     async sync(): Promise<SyncResult> {
         this.audit("sync:start");
-        return new Promise<SyncResult>((resolve) => {
-            void this.plugin.promiseQueue.addTask(
-                async () => {
-                    try {
-                        this.audit("sync:commit-and-sync:start");
-                        await this.plugin.commitAndSync({
-                            fromAutoBackup: false,
-                        });
-                        await this.persistGitRepoFingerprint();
-                        this.audit("sync:commit-and-sync:success");
-                        return { success: true as const };
-                    } catch (error) {
-                        this.audit("sync:commit-and-sync:failure", {
-                            error,
-                        });
-                        return {
-                            success: false as const,
-                            error:
-                                error instanceof Error
-                                    ? error
-                                    : new Error(String(error)),
-                        };
-                    }
-                },
-                (taskResult) => {
-                    void (async () => {
-                        if (!taskResult?.success) {
-                            const message =
-                                taskResult?.error?.message ??
-                                "Sync failed before git status could be refreshed";
-                            resolve({
-                                filesChanged: 0,
-                                conflicts: [],
-                                message,
-                                success: false,
-                            });
-                            return;
-                        }
+        try {
+            this.audit("sync:commit-and-sync:start");
+            await this.plugin.commitAndSync({ fromAutoBackup: false });
+            await this.persistGitRepoFingerprint();
+            this.audit("sync:commit-and-sync:success");
+        } catch (error) {
+            this.audit("sync:commit-and-sync:failure", { error });
+            return {
+                filesChanged: 0,
+                conflicts: [],
+                message: error instanceof Error ? error.message : String(error),
+                success: false,
+            };
+        }
 
-                        try {
-                            const status =
-                                await this.plugin.gitManager.status();
-                            const conflicts = status.conflicted ?? [];
-                            this.audit("sync:status", {
-                                changed: status.changed.length,
-                                conflicts: conflicts.length,
-                            });
-                            resolve({
-                                filesChanged: status.changed.length,
-                                conflicts: conflicts.map((path) => ({
-                                    path,
-                                    // Content is not retrieved here; callers that need
-                                    // the raw text should use app.vault.read() after
-                                    // receiving this SyncResult.  The conflict markers
-                                    // (<<<<<<<, =======, >>>>>>>) are present in the
-                                    // working-tree file and can be read via vault.read().
-                                    localContent: "",
-                                    remoteContent: "",
-                                })),
-                                message:
-                                    conflicts.length > 0
-                                        ? `Sync completed with ${conflicts.length} conflict(s)`
-                                        : "Sync completed successfully",
-                                success: conflicts.length === 0,
-                            });
-                        } catch (error) {
-                            this.audit("sync:status-failure", {
-                                error,
-                            });
-                            const message =
-                                error instanceof Error
-                                    ? error.message
-                                    : "Sync completed but git status refresh failed";
-                            resolve({
-                                filesChanged: 0,
-                                conflicts: [],
-                                message,
-                                success: false,
-                            });
-                        }
-                    })();
-                }
-            );
-        });
+        try {
+            const status = await this.plugin.gitManager.status();
+            const conflicts = status.conflicted ?? [];
+            this.audit("sync:status", {
+                changed: status.changed.length,
+                conflicts: conflicts.length,
+            });
+            return {
+                filesChanged: status.changed.length,
+                conflicts: conflicts.map((path) => ({
+                    path,
+                    localContent: "",
+                    remoteContent: "",
+                })),
+                message:
+                    conflicts.length > 0
+                        ? "Sync completed with " +
+                          conflicts.length +
+                          " conflict(s)"
+                        : "Sync completed successfully",
+                success: conflicts.length === 0,
+            };
+        } catch (error) {
+            this.audit("sync:status-failure", { error });
+            return {
+                filesChanged: 0,
+                conflicts: [],
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Sync completed but git status refresh failed",
+                success: false,
+            };
+        }
     }
 
     async pull(): Promise<void> {
